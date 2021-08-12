@@ -39,8 +39,6 @@ class NeuralNetwork:
 
         self.activation_func = activation_func
         self.c = 0
-        if activation_func == 'ReLu' and c == 0:
-            pass
 
         if (activation_func == 'leaky_ReLU') and (c > 0):
             self.c = c
@@ -89,37 +87,43 @@ class NeuralNetwork:
 
     @staticmethod
     def sigmoid(z):
-        """Compute the sigmoid function for a given input z."""
+        """Computes the sigmoid function for a given input z."""
         return (1 / (1 + np.exp(-1*z)))
 
     @staticmethod
     def sigmoid_deriv(z):
-        """Compute the derivative of the sigmoid function for a given input z."""
+        """Computes the derivative of the sigmoid function for a given input z."""
         sig = NeuralNetwork.sigmoid(z)
         return (sig * (1 - sig))
 
     @staticmethod
     def ReLU(z):
+        """Computes the ReLU function for a given input z."""
         return np.where(z > 0, z, 0)
 
     @staticmethod
     def ReLU_deriv(z):
+        """Computes the derivative of the ReLU function for a given input z."""
         return np.where(z > 0, 1, 0)
 
     @staticmethod
     def leaky_ReLU(c, z):
+        """Computes the leaky ReLU function for a given input z."""
         return np.where(z > 0, z, c * z)        
     
     @staticmethod
     def leaky_ReLU_deriv(c, z):
+        """Computes the derivative of the leaky ReLU function for a given input z."""
         return np.where(z > 0, 1, c)
 
     @staticmethod
     def tanh(z):
+        """Computes the tanh function for a given input z."""
         return np.tanh(z)
 
     @staticmethod
     def tanh_deriv(z):
+        """Computes the derivative of the tanh function for a given input z."""
         return 1 - (NeuralNetwork.tanh(z) ** 2)
 
 #####################################################
@@ -133,14 +137,14 @@ class NeuralNetwork:
         A[0] = input_layer
 
         layers = list(W.keys())
-        final_layer = list(W.keys())[-1]
+        final_layer = layers[-1]
         next_layer = 0
         
         # Perform feed-forward up to the output layer
         for i in layers[:-1]:
             z[i] = NeuralNetwork.compute_activation(W[i], A[i - 1], b[i])
             
-            if (self.activation_func in ['ReLU', 'leaky_ReLU']):
+            if (self.activation_func == 'leaky_ReLU'):
                 next_layer = self.activation(self.c, z[i])
             else:
                 next_layer = self.activation(z[i])
