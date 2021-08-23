@@ -164,3 +164,19 @@ class NeuralNetwork:
 
         return output_layer
 
+        @staticmethod
+        def cost(y_pred, y):
+            """
+            Computes the cost of the neural network output.
+
+            @params
+            y_pred: Neural network output
+            y: Expected output
+            """
+            return 0.5 * np.square(y_pred - y)
+
+        def cost_gradient(self, y_pred, y):
+            if (self.activation_func == 'ReLU' | self.activation_func =='leaky_ReLU'):
+                return (1 / self.feature_count) * (y_pred - y) * self.activation_deriv(self.c, output_layer)
+            
+            return (1 / self.feature_count) * (y_pred - y) * self.activation_deriv(output_layer)
