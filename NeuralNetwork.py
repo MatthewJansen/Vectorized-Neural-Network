@@ -176,7 +176,7 @@ class NeuralNetwork:
             return 0.5 * np.square(output - y)
 
         def cost_gradient(self, output, y):
-            if (self.activation_func == 'ReLU' | self.activation_func =='leaky_ReLU'):
+            if (self.activation_func =='leaky_ReLU'):
                 return (1 / self.feature_count) * (output - y) * self.activation_deriv(self.c, output_layer)
             
             return (1 / self.feature_count) * (y_pred - y) * self.activation_deriv(output_layer)
@@ -184,7 +184,7 @@ class NeuralNetwork:
         def hidden_layer_cost(self, delta, weights, z):
             delta_W = np.dot(weights.T, delta)
 
-            if (self.activation_func == 'ReLU' | self.activation_func =='leaky_ReLU'):
+            if (self.activation_func =='leaky_ReLU'):
                 return delta_W * self.activation_deriv(self.c, z)
 
             return delta_W * self.activation_deriv(z)
@@ -212,5 +212,45 @@ class NeuralNetwork:
 
             #Add deltas to the network structure
             self.neuralnetwork['deltas'] = deltas
+
+            return
+
+        def update_network(self):
+            """Updates the weights and biases of the Neural Network."""
+            dw = {}
+            db = {}
+            W = self.neuralnetwork['weights']
+            b = self.neuralnetwork['bias']
+            A = self.neuralnetwork['activation']
+            z = self.neuralnetwork['z']
+            z[0] = A[0]
+            deltas = self.neuralnetwork['deltas']
+
+            final_layer = max(A.keys())
+
+            dw[final_layer] = np.dot(deltas[final_layer], A[final_layer - 1].T)
+            db[final_layer] = (1 / self.feature_count) * np.sum(deltas[final_layer], axis=1, keepdims=True)
+
+            #compute differentials for weights and biases of each layer in the network
+            #starting at the output layer
+            for layer in reversed(list(W.keys())[1:]):
+                # Compute derivative of activation function
+                func_deriv = 0
+                if (self.activation_func =='leaky_ReLU'):
+                    func_deriv = self.activation_deriv(self.c, z[layer - 1])
+                else:
+                    func_deriv = self.activation_deriv(z[layer - 1])
+                
+                dw[layer - 1] = (1 / self.feature_count) * np.dot(W[layer].T, deltas[layer]) * func_deriv
+                db[layer - 1] = (1 / self.feature_count) * np.sum(deltas[layer - 1], axis=1, keepdims=True)
+
+            #compute new weights and biases
+            for i in W.keys():
+                W[i] += -1 * self.alpha * dw[i]
+                b[i] += self.alpha * db[i]
+                 
+            #update weights and biases
+            self.neuralnetwork['weights'] = W
+            self.neuralnetwork['bias'] = b
 
             return
