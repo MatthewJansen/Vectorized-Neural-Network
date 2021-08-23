@@ -164,148 +164,148 @@ class NeuralNetwork:
 
         return output_layer
 
-        @staticmethod
-        def cost(output, y):
-            """
-            Computes the cost of the neural network output.
+    @staticmethod
+    def cost(output, y):
+        """
+        Computes the cost of the neural network output.
 
-            @params
-            output: Neural network output (commonly referred to as y_pred)
-            y: Expected output
-            """
-            return 0.5 * np.square(output - y)
+        @params
+        output: Neural network output (commonly referred to as y_pred)
+        y: Expected output
+        """
+        return 0.5 * np.square(output - y)
 
-        def cost_gradient(self, output, y):
-            if (self.activation_func =='leaky_ReLU'):
-                return (1 / self.feature_count) * (output - y) * self.activation_deriv(self.c, output_layer)
-            
-            return (1 / self.feature_count) * (y_pred - y) * self.activation_deriv(output_layer)
-
-        def hidden_layer_cost(self, delta, weights, z):
-            delta_W = np.dot(weights.T, delta)
-
-            if (self.activation_func =='leaky_ReLU'):
-                return delta_W * self.activation_deriv(self.c, z)
-
-            return delta_W * self.activation_deriv(z)
-
-        def back_propagate_error(self, y):
-            """Backpropagate the error of the output layer to the input layer."""
-            W = self.neuralnetwork['weights']
-            b = self.neuralnetwork['bias']
-            A = self.neuralnetwork['activation']
-            z = self.neuralnetwork['z']
-            deltas = {}
-
-            #Compute delta for the output layer
-            output = A[max(A.keys())]
-            output_error_grad = NeuralNetwork.cost_gradient(self, output, y)
-            deltas[max(A.keys())] = output_error_grad
-            
-            #Construct a list containing layer numbers to be traversed
-            layers = list(A.keys())[2:]
-
-            #Traverse the network backwards from the output layer up to
-            #the second last layer and compute hidden deltas
-            for layer in reversed(layers):
-                deltas[layer - 1] = NeuralNetwork.hidden_layer_error(self, deltas[layer], W[layer], z[layer - 1])
-
-            #Add deltas to the network structure
-            self.neuralnetwork['deltas'] = deltas
-
-            return
-
-        def update_network(self):
-            """Updates the weights and biases of the Neural Network."""
-            dw = {}
-            db = {}
-            W = self.neuralnetwork['weights']
-            b = self.neuralnetwork['bias']
-            A = self.neuralnetwork['activation']
-            z = self.neuralnetwork['z']
-            z[0] = A[0]
-            deltas = self.neuralnetwork['deltas']
-
-            final_layer = max(A.keys())
-
-            dw[final_layer] = np.dot(deltas[final_layer], A[final_layer - 1].T)
-            db[final_layer] = (1 / self.feature_count) * np.sum(deltas[final_layer], axis=1, keepdims=True)
-
-            #compute differentials for weights and biases of each layer in the network
-            #starting at the output layer
-            for layer in reversed(list(W.keys())[1:]):
-                # Compute derivative of activation function
-                func_deriv = 0
-                if (self.activation_func =='leaky_ReLU'):
-                    func_deriv = self.activation_deriv(self.c, z[layer - 1])
-                else:
-                    func_deriv = self.activation_deriv(z[layer - 1])
-                
-                dw[layer - 1] = (1 / self.feature_count) * np.dot(W[layer].T, deltas[layer]) * func_deriv
-                db[layer - 1] = (1 / self.feature_count) * np.sum(deltas[layer - 1], axis=1, keepdims=True)
-
-            #compute new weights and biases
-            for i in W.keys():
-                W[i] += -1 * self.alpha * dw[i]
-                b[i] += self.alpha * db[i]
-
-            #update weights and biases
-            self.neuralnetwork['weights'] = W
-            self.neuralnetwork['bias'] = b
-
-            return
+    def cost_gradient(self, output, y):
+        if (self.activation_func =='leaky_ReLU'):
+            return (1 / self.feature_count) * (output - y) * self.activation_deriv(self.c, output_layer)
         
-        def evaluate(self, X, y):
-            """Test the Neural Network."""
-            test_size = np.size(X, 0)
-            positive = 0
-            negative = 0
+        return (1 / self.feature_count) * (y_pred - y) * self.activation_deriv(output_layer)
 
-            for i in range(test_size):
-                x = X[i]#[:].reshape((np.shape(X[i][:])[0], 1))
-                target = y[i]
+    def hidden_layer_cost(self, delta, weights, z):
+        delta_W = np.dot(weights.T, delta)
+
+        if (self.activation_func =='leaky_ReLU'):
+            return delta_W * self.activation_deriv(self.c, z)
+
+        return delta_W * self.activation_deriv(z)
+
+    def back_propagate_error(self, y):
+        """Backpropagate the error of the output layer to the input layer."""
+        W = self.neuralnetwork['weights']
+        b = self.neuralnetwork['bias']
+        A = self.neuralnetwork['activation']
+        z = self.neuralnetwork['z']
+        deltas = {}
+
+        #Compute delta for the output layer
+        output = A[max(A.keys())]
+        output_error_grad = NeuralNetwork.cost_gradient(self, output, y)
+        deltas[max(A.keys())] = output_error_grad
+        
+        #Construct a list containing layer numbers to be traversed
+        layers = list(A.keys())[2:]
+
+        #Traverse the network backwards from the output layer up to
+        #the second last layer and compute hidden deltas
+        for layer in reversed(layers):
+            deltas[layer - 1] = NeuralNetwork.hidden_layer_error(self, deltas[layer], W[layer], z[layer - 1])
+
+        #Add deltas to the network structure
+        self.neuralnetwork['deltas'] = deltas
+
+        return
+
+    def update_network(self):
+        """Updates the weights and biases of the Neural Network."""
+        dw = {}
+        db = {}
+        W = self.neuralnetwork['weights']
+        b = self.neuralnetwork['bias']
+        A = self.neuralnetwork['activation']
+        z = self.neuralnetwork['z']
+        z[0] = A[0]
+        deltas = self.neuralnetwork['deltas']
+
+        final_layer = max(A.keys())
+
+        dw[final_layer] = np.dot(deltas[final_layer], A[final_layer - 1].T)
+        db[final_layer] = (1 / self.feature_count) * np.sum(deltas[final_layer], axis=1, keepdims=True)
+
+        #compute differentials for weights and biases of each layer in the network
+        #starting at the output layer
+        for layer in reversed(list(W.keys())[1:]):
+            # Compute derivative of activation function
+            func_deriv = 0
+            if (self.activation_func =='leaky_ReLU'):
+                func_deriv = self.activation_deriv(self.c, z[layer - 1])
+            else:
+                func_deriv = self.activation_deriv(z[layer - 1])
+            
+            dw[layer - 1] = (1 / self.feature_count) * np.dot(W[layer].T, deltas[layer]) * func_deriv
+            db[layer - 1] = (1 / self.feature_count) * np.sum(deltas[layer - 1], axis=1, keepdims=True)
+
+        #compute new weights and biases
+        for i in W.keys():
+            W[i] += -1 * self.alpha * dw[i]
+            b[i] += self.alpha * db[i]
+
+        #update weights and biases
+        self.neuralnetwork['weights'] = W
+        self.neuralnetwork['bias'] = b
+
+        return
+    
+    def evaluate(self, X, y):
+        """Test the Neural Network."""
+        test_size = np.size(X, 0)
+        positive = 0
+        negative = 0
+
+        for i in range(test_size):
+            x = X[i]#[:].reshape((np.shape(X[i][:])[0], 1))
+            target = y[i]
+            output = NeuralNetwork.forward_propagate(self, x)
+            prediction = np.argmax(output, axis=0)
+
+            if i%1000 == 0:
+                print(f"x: {x}\ntarget: {target}\noutput: {output}\nprediction: {prediction}")
+            
+            if (target == prediction):
+                positive += 1
+            else:
+                negative += 1
+
+        accuracy = (positive / test_size) * 100
+
+        return accuracy
+
+    def train(self, X_train, y_train, X_test, y_test , epochs):
+        """Train the Neural Network."""
+
+        epoch = 1
+        train_size = np.size(X_train, 0)
+        Train_accuracies = []
+        Test_accuracies = []
+
+        #train neural network
+        while (epoch <= epochs):
+            #loop through
+            for i in range(train_size):
+                x = X_train[i]#[:].reshape((np.shape(X_train[i][:])[0], 1))
                 output = NeuralNetwork.forward_propagate(self, x)
-                prediction = np.argmax(output, axis=0)
+                y_pred = output
 
-                if i%1000 == 0:
-                    print(f"x: {x}\ntarget: {target}\noutput: {output}\nprediction: {prediction}")
-                
-                if (target == prediction):
-                    positive += 1
-                else:
-                    negative += 1
+                NeuralNetwork.back_propagate_error(self, y_pred)
+                NeuralNetwork.update_network(self)
 
-            accuracy = (positive / test_size) * 100
+            train_accuracy = NeuralNetwork.evaluate(self, X_train, y_train)
+            test_accuracy = NeuralNetwork.evaluate(self, X_test, y_test)
 
-            return accuracy
+            print(f'Epoch: [{epoch}]\nTrain accuracy: {train_accuracy}%\nTest accuracy: {test_accuracy}%')
+            print('-------------------------------------------------')
 
-        def train(self, X_train, y_train, X_test, y_test , epochs):
-            """Train the Neural Network."""
+            Train_accuracies.append(train_accuracy)
+            Test_accuracies.append(test_accuracy)
+            epoch += 1
 
-            epoch = 1
-            train_size = np.size(X_train, 0)
-            Train_accuracies = []
-            Test_accuracies = []
-
-            #train neural network
-            while (epoch <= epochs):
-                #loop through
-                for i in range(train_size):
-                    x = X_train[i]#[:].reshape((np.shape(X_train[i][:])[0], 1))
-                    output = NeuralNetwork.forward_propagate(self, x)
-                    y_pred = output
-
-                    NeuralNetwork.back_propagate_error(self, y_pred)
-                    NeuralNetwork.update_network(self)
-
-                train_accuracy = NeuralNetwork.evaluate(self, X_train, y_train)
-                test_accuracy = NeuralNetwork.evaluate(self, X_test, y_test)
-
-                print(f'Epoch: [{epoch}]\nTrain accuracy: {train_accuracy}%\nTest accuracy: {test_accuracy}%')
-                print('-------------------------------------------------')
-
-                Train_accuracies.append(train_accuracy)
-                Test_accuracies.append(test_accuracy)
-                epoch += 1
-
-            return Train_accuracies, Test_accuracies
+        return Train_accuracies, Test_accuracies
