@@ -46,8 +46,7 @@ def main():
 
     x, y = get_sample(1, X_train, y_train)
 
-    NN.train(X_train, y_train, X_valid, y_valid)
-
+    NN.train(X_train, y_train, X_valid, y_valid, 10)
     pred = NN.forward_propagate(x)
 
     print(f"Input:\n{x}\n\nExpected Output:\n{y}\n\nPrediction:\n{float(pred >= 0.5)}\n\nCorrect: {evaluate(actual_y, pred)}")
