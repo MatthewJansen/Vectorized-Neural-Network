@@ -165,18 +165,52 @@ class NeuralNetwork:
         return output_layer
 
         @staticmethod
-        def cost(y_pred, y):
+        def cost(output, y):
             """
             Computes the cost of the neural network output.
 
             @params
-            y_pred: Neural network output
+            output: Neural network output (commonly referred to as y_pred)
             y: Expected output
             """
-            return 0.5 * np.square(y_pred - y)
+            return 0.5 * np.square(output - y)
 
-        def cost_gradient(self, y_pred, y):
+        def cost_gradient(self, output, y):
             if (self.activation_func == 'ReLU' | self.activation_func =='leaky_ReLU'):
-                return (1 / self.feature_count) * (y_pred - y) * self.activation_deriv(self.c, output_layer)
+                return (1 / self.feature_count) * (output - y) * self.activation_deriv(self.c, output_layer)
             
             return (1 / self.feature_count) * (y_pred - y) * self.activation_deriv(output_layer)
+
+        def hidden_layer_cost(self, delta, weights, z):
+            delta_W = np.dot(weights.T, delta)
+
+            if (self.activation_func == 'ReLU' | self.activation_func =='leaky_ReLU'):
+                return delta_W * self.activation_deriv(self.c, z)
+
+            return delta_W * self.activation_deriv(z)
+
+        def back_propagate_error(self, y):
+            """Backpropagate the error of the output layer to the input layer."""
+            W = self.neuralnetwork['weights']
+            b = self.neuralnetwork['bias']
+            A = self.neuralnetwork['activation']
+            z = self.neuralnetwork['z']
+            deltas = {}
+
+            #Compute delta for the output layer
+            output = A[max(A.keys())]
+            output_error_grad = NeuralNetwork.cost_gradient(self, output, y)
+            deltas[max(A.keys())] = output_error_grad
+            
+            #Construct a list containing layer numbers to be traversed
+            layers = list(A.keys())[2:]
+
+            #Traverse the network backwards from the output layer up to
+            #the second last layer and compute hidden deltas
+            for layer in reversed(layers):
+                deltas[layer - 1] = NeuralNetwork.hidden_layer_error(self, deltas[layer], W[layer], z[layer - 1])
+
+            #Add deltas to the network structure
+            self.neuralnetwork['deltas'] = deltas
+
+            return
