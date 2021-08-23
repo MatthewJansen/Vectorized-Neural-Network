@@ -248,9 +248,64 @@ class NeuralNetwork:
             for i in W.keys():
                 W[i] += -1 * self.alpha * dw[i]
                 b[i] += self.alpha * db[i]
-                 
+
             #update weights and biases
             self.neuralnetwork['weights'] = W
             self.neuralnetwork['bias'] = b
 
             return
+        
+        def evaluate(self, X, y):
+            """Test the Neural Network."""
+            test_size = np.size(X, 0)
+            positive = 0
+            negative = 0
+
+            for i in range(test_size):
+                x = X[i]#[:].reshape((np.shape(X[i][:])[0], 1))
+                target = y[i]
+                output = NeuralNetwork.forward_propagate(self, x)
+                prediction = np.argmax(output, axis=0)
+
+                if i%1000 == 0:
+                    print(f"x: {x}\ntarget: {target}\noutput: {output}\nprediction: {prediction}")
+                
+                if (target == prediction):
+                    positive += 1
+                else:
+                    negative += 1
+
+            accuracy = (positive / test_size) * 100
+
+            return accuracy
+
+        def train(self, X_train, y_train, X_test, y_test , epochs):
+            """Train the Neural Network."""
+
+            epoch = 1
+            train_size = np.size(X_train, 0)
+            Train_accuracies = []
+            Test_accuracies = []
+
+            #train neural network
+            while (epoch <= epochs):
+                #loop through
+                for i in range(train_size):
+                    x = X_train[i]#[:].reshape((np.shape(X_train[i][:])[0], 1))
+                    output = NeuralNetwork.forward_propagate(self, x)
+                    y_pred = output
+
+                    NeuralNetwork.back_propagate_error(self, y_pred)
+                    NeuralNetwork.update_network(self)
+
+                train_accuracy = NeuralNetwork.evaluate(self, X_train, y_train)
+                test_accuracy = NeuralNetwork.evaluate(self, X_test, y_test)
+
+                print(f'Epoch: [{epoch}]\nTrain accuracy: {train_accuracy}%\nTest accuracy: {test_accuracy}%')
+                print('-------------------------------------------------')
+
+                Train_accuracies.append(train_accuracy)
+                Test_accuracies.append(test_accuracy)
+                epoch += 1
+
+            return Train_accuracies, Test_accuracies
