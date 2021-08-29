@@ -177,9 +177,9 @@ class NeuralNetwork:
 
     def cost_gradient(self, output, y):
         if (self.activation_func =='leaky_ReLU'):
-            return (1 / self.feature_count) * (output - y) * self.activation_deriv(self.c, output_layer)
+            return (1 / self.feature_count) * (output - y) * self.activation_deriv(self.c, output)
         
-        return (1 / self.feature_count) * (y_pred - y) * self.activation_deriv(output_layer)
+        return (1 / self.feature_count) * (output - y) * self.activation_deriv(output)
 
     def hidden_layer_cost(self, delta, weights, z):
         delta_W = np.dot(weights.T, delta)
@@ -208,7 +208,7 @@ class NeuralNetwork:
         #Traverse the network backwards from the output layer up to
         #the second last layer and compute hidden deltas
         for layer in reversed(layers):
-            deltas[layer - 1] = NeuralNetwork.hidden_layer_error(self, deltas[layer], W[layer], z[layer - 1])
+            deltas[layer - 1] = NeuralNetwork.hidden_layer_cost(self, deltas[layer], W[layer], z[layer - 1])
 
         #Add deltas to the network structure
         self.neuralnetwork['deltas'] = deltas
@@ -246,7 +246,7 @@ class NeuralNetwork:
 
         #compute new weights and biases
         for i in W.keys():
-            W[i] += -1 * self.alpha * dw[i]
+            W[i] -= self.alpha * dw[i]
             b[i] += self.alpha * db[i]
 
         #update weights and biases
@@ -262,15 +262,15 @@ class NeuralNetwork:
         negative = 0
 
         for i in range(test_size):
-            x = X[i]#[:].reshape((np.shape(X[i][:])[0], 1))
+            x = X[i][:].reshape((np.shape(X[i][:])[0], 1))
             target = y[i]
             output = NeuralNetwork.forward_propagate(self, x)
             prediction = np.argmax(output, axis=0)
 
-            if i%1000 == 0:
-                print(f"x: {x}\ntarget: {target}\noutput: {output}\nprediction: {prediction}")
             
-            if (target == prediction):
+            #print(f"x: {x}\ntarget: {target}\noutput: {output}\nprediction: {prediction}")
+            
+            if (np.argmax(target) == prediction):
                 positive += 1
             else:
                 negative += 1
@@ -291,7 +291,7 @@ class NeuralNetwork:
         while (epoch <= epochs):
             #loop through
             for i in range(train_size):
-                x = X_train[i]#[:].reshape((np.shape(X_train[i][:])[0], 1))
+                x = X_train[i][:].reshape((np.shape(X_train[i][:])[0], 1))
                 output = NeuralNetwork.forward_propagate(self, x)
                 y_pred = output
 
