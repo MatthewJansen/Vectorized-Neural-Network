@@ -284,10 +284,10 @@ class NeuralNetwork:
             target = test_target[i]
             output = NeuralNetwork.forward_propagate(self, x)
             prediction = np.argmax(output, axis=0)
-            if i%1000 == 0:
-                print(f"x: {x}\ntarget: {target}\noutput: {output}\nprediction: {prediction}")
+            # if i%1000 == 0:
+            #     print(f"x: {x}\ntarget: {target}\noutput: {output}\nprediction: {prediction}")
             
-            if (target == prediction):
+            if (np.argmax(target) == prediction):
                 positive += 1
             else:
                 negative += 1

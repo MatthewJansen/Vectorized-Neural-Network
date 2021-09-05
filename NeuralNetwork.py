@@ -219,15 +219,16 @@ class NeuralNetwork:
         """Updates the weights and biases of the Neural Network."""
         dw = {}
         db = {}
+
         W = self.neuralnetwork['weights']
         b = self.neuralnetwork['bias']
         A = self.neuralnetwork['activation']
         z = self.neuralnetwork['z']
+        
         z[0] = A[0]
         deltas = self.neuralnetwork['deltas']
 
         final_layer = max(A.keys())
-
         dw[final_layer] = np.dot(deltas[final_layer], A[final_layer - 1].T)
         db[final_layer] = (1 / self.feature_count) * np.sum(deltas[final_layer], axis=1, keepdims=True)
 
@@ -236,9 +237,10 @@ class NeuralNetwork:
         for layer in reversed(list(W.keys())[1:]):
             # Compute derivative of activation function
             func_deriv = 0
-            if (self.activation_func =='leaky_ReLU'):
+            if (self.activation_func == 'leaky_ReLU'):
                 func_deriv = self.activation_deriv(self.c, z[layer - 1])
-            else:
+
+            if (self.activation_func != 'leaky_ReLU'):
                 func_deriv = self.activation_deriv(z[layer - 1])
             
             dw[layer - 1] = (1 / self.feature_count) * np.dot(W[layer].T, deltas[layer]) * func_deriv
@@ -246,13 +248,16 @@ class NeuralNetwork:
 
         #compute new weights and biases
         for i in W.keys():
-            W[i] -= self.alpha * dw[i]
+            W[i] += -1 * self.alpha * dw[i]
             b[i] += self.alpha * db[i]
 
+        # print(W == self.neuralnetwork['weights'])
+        # print(b == self.neuralnetwork['bias'])
+        
         #update weights and biases
         self.neuralnetwork['weights'] = W
         self.neuralnetwork['bias'] = b
-
+        
         return
     
     def evaluate(self, X, y):
@@ -279,7 +284,7 @@ class NeuralNetwork:
 
         return accuracy
 
-    def train(self, X_train, y_train, X_test, y_test , epochs):
+    def train(self, X_train, y_train, X_test, y_test, epochs):
         """Train the Neural Network."""
 
         epoch = 1
@@ -293,9 +298,8 @@ class NeuralNetwork:
             for i in range(train_size):
                 x = X_train[i][:].reshape((np.shape(X_train[i][:])[0], 1))
                 output = NeuralNetwork.forward_propagate(self, x)
-                y_pred = output
 
-                NeuralNetwork.back_propagate_error(self, y_pred)
+                NeuralNetwork.back_propagate_error(self, output)
                 NeuralNetwork.update_network(self)
 
             train_accuracy = NeuralNetwork.evaluate(self, X_train, y_train)
