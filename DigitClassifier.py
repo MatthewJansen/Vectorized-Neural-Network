@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from NeuralNetwork import NeuralNetwork
+import matplotlib.pyplot as plt
 
 
 def load_data(filename: str, delimeter: str, labels: list):
@@ -10,8 +11,7 @@ def load_data(filename: str, delimeter: str, labels: list):
 def generate_validation_set(training_set: pd.DataFrame, split_ratio: float):
     n = training_set.shape[0]
 
-    temp_set = training_set.sample(
-        frac=1, random_state=42).reset_index(drop=True)
+    temp_set = training_set.sample(frac=1, random_state=42).reset_index(drop=True)
 
     new_train_set = temp_set[0: int(n * (1 - split_ratio))][:]
     valid_set = temp_set[int(n * (1 - split_ratio)):][:]
@@ -19,71 +19,68 @@ def generate_validation_set(training_set: pd.DataFrame, split_ratio: float):
     return new_train_set, valid_set
 
 
-def one_hot_encoding(digit_set: pd.DataFrame):
-    vec_shape = (10, 1)
-    def encode(id, vec_shape): return np.array(
-        [0 if i != id else 1 for i in range(10)]).reshape(vec_shape)
-
-    encoded_digit_labels = {digit: encode(
-        digit, vec_shape) for digit in range(10)}
-    encoded_digit_set = digit_set['id'].map(encoded_digit_labels)
-
-    digit_set['id'] = encoded_digit_set
-
-    return digit_set
-
-def evaluate_prediction(y, y_pred):
-    return np.argmax(y) == np.argmax(y_pred)
+# def evaluate_prediction(y, y_pred):
+#     y_encoded = encode(y)
+#     return np.argmax(y_encoded) == np.argmax(y_pred)
 
 
 def main():
-    mnist_test = 'mnist_test.csv'
-    mnist_train = 'mnist_train.csv'
+    mnist_test = 'mnist_test.csv' #'/content/drive/MyDrive/MachineLearning/DigitRecognition/mnist_test.csv'
+    mnist_train = 'mnist_train.csv' #'/content/drive/MyDrive/MachineLearning/DigitRecognition/mnist_train.csv'
 
-    # get training data
+    # get datasets
     delimeter = ','
     labels = ['id'] + [f'pixel_{i}' for i in range(784)]
 
-    # get datasets
-    train_df = load_data(mnist_train, delimeter, labels) / 255
-    test_set = load_data(mnist_test, delimeter, labels) / 255
-
+    train_df = load_data(mnist_train, delimeter, labels)
+    test_set = load_data(mnist_test, delimeter, labels)
+    
     # apply one-hot-encoding to data
-    train_df = one_hot_encoding(train_df[0 : int(train_df.shape[0]*.1)][:])
-    test_set = one_hot_encoding(test_set[0 : int(train_df.shape[0]*.1)][:])
+    # train_df = train_df[0 : int(train_df.shape[0]*.1)][:]
+    # test_set = test_set[0 : int(train_df.shape[0]*.1)][:]
 
     # split training data into training & validation sets
-    split = 0.8
+    split = 0.1
     train_set, valid_set = generate_validation_set(train_df, split)
-
+    print(train_set.shape, valid_set.shape)
+    
     #construct input output vector sets
     set_splits = lambda digit_set: (digit_set.iloc[:, 1:].to_numpy(), digit_set.iloc[:, 0].to_numpy())
     X_train, y_train = set_splits(train_set)
     X_valid, y_valid = set_splits(valid_set)
     X_test, y_test = set_splits(test_set)
 
+    # normalize input data
+    X_train = X_train / 255
+    X_valid = X_valid / 255
+    X_test = X_test / 255
+
     # initialise neural network parameters
     n = train_set.shape[1] - 1
-    layer_config = [n, 400, 400, 9]
-    alpha = 0.01
-    activation_function = "ReLU"
-
+    layer_config = [n, 784, 10]
+    alpha = 12
+    activation_function = "leaky_ReLU"
+    const_c = 0.1
     # construct neural network
-    NN = NeuralNetwork(n, alpha, layer_config,
-                       activation_func=activation_function)
-
-    # X_shape = (784, 1)
-    # X1, y1 = X_train[2].reshape(X_shape), y_train[2]
-    # y_pred = NN.forward_propagate(X1)
+    NN = NeuralNetwork(n, alpha, layer_config, activation_func=activation_function, c=const_c)
     
-    # print(f'y: {np.argmax(y1)}\t\ty_pred: {np.argmax(y_pred)}\n\nCorrect prediction: {evaluate_prediction(y1, y_pred)}') 
-
     #train neural network
     epochs = 3
-    NN.train(X_train, y_train, X_valid, y_valid, epochs)
+    Train_accuracies, Valid_accuracies, cost_hist = NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
+    #NN.evaluate(X_test, y_test)
+    print(NN.total_cost(X_test, y_test))
+    
+    return Train_accuracies, Valid_accuracies, cost_hist
 
-    return 0
-
+def plot_cost_hist(cost_history: list):
+    epochs = [i+1 for i in range(len(cost_hist))]
+    plt.plot(epochs, cost_history)
+    plt.xlabel('epochs')
+    plt.ylabel('Cost J')
+    plt.title('Cost history plot')
+    plt.show()
+    return
 
 if __name__ == '__main__':
-    main()
+    Train_accuracies, Valid_accuracies, cost_hist = main()
+    plot_cost_hist(cost_hist)

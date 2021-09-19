@@ -50,7 +50,7 @@ def main():
     NN = NeuralNetwork(n, alpha, layer_config,
                        activation_func=activation_function)
 
-    sample_size = 1000
+    sample_size = 10000
     data = generate_data(sample_size, n)
 
     train_set, test_set = split_dataset(data, sample_size, 0.9)
@@ -62,9 +62,9 @@ def main():
     X_valid, y_valid = prepare_data(np.shape(valid_set)[0], valid_set)
     X_test, y_test = prepare_data(np.shape(test_set)[0], test_set)
 
-    y_train = one_hot_encoding(y_train).reshape(y_train.shape[0], 2, 1)
-    y_valid = one_hot_encoding(y_valid).reshape(y_valid.shape[0], 2, 1)
-    y_test = one_hot_encoding(y_test).reshape(y_test.shape[0], 2, 1)
+    # y_train = y_train.reshape(y_train.shape[0], 2, 1)
+    # y_valid = y_valid.reshape(y_valid.shape[0], 2, 1)
+    # y_test = y_test.reshape(y_test.shape[0], 2, 1)
 
     x, y = get_sample(1, X_test, y_test)
 
