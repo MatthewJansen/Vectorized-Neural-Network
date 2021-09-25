@@ -36,7 +36,18 @@ class NeuralNetworkConfig:
         
         return 
 
+    @staticmethod
     def load_network_config(model_name:str) -> NeuralNetwork:
+        '''
+        Used to load neural network object variables. 
+
+        @params
+        model_name: (str) -> name of the NeuralNetwork object.
+
+        @returns
+        NN: (NeuralNetwork) -> NeuralNetwork object created with stored variables
+        '''
+
         network_parameters = {}
 
         with open(f'{model_name}_params.json') as json_file:
@@ -56,24 +67,6 @@ class NeuralNetworkConfig:
 
         return NN
 
-def test() -> None:
-    # initialise neural network parameters
-    n = 784
-    layer_config = [n, 784, 10]
-    alpha = 12
-    activation_function = "leaky_ReLU"
-    const_c = 0.1
-
-    # construct neural network
-    NN = NeuralNetwork(n, alpha, layer_config, activation_func=activation_function, c=const_c)
-  
-    network_variables = vars(NN)
-
-    net_config = network_variables['neuralnetwork']
-
-    NeuralNetworkConfig.store_network_config(NN, 'test_model')
-    NeuralNetworkConfig.load_network_config('test_model')
-
 
 if __name__ == '__main__':
-    test()
+    pass
