@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from NeuralNetwork import NeuralNetwork
+from NetworkConfigHandler import NeuralNetworkConfig
 import matplotlib.pyplot as plt
 
 
@@ -18,11 +19,29 @@ def generate_validation_set(training_set: pd.DataFrame, split_ratio: float):
 
     return new_train_set, valid_set
 
+def encode_output(y):
+    """
+    Encodes the expected output from the dataset into a sparse column vector
+    containing the value 1 at the index assigned to the output.
 
-# def evaluate_prediction(y, y_pred):
-#     y_encoded = encode(y)
-#     return np.argmax(y_encoded) == np.argmax(y_pred)
+    @param
+    y:  output from dataset 
+    
+    Note - this function should be written to accommodate the evaluation for 
+    the Neural Network. 
+    """
+    encoded_vec = np.zeros((10, 1))
+    encoded_vec[y] = 1
+    return encoded_vec
 
+def plot_cost_hist(cost_history: list):
+    epochs = [i+1 for i in range(len(cost_history))]
+    plt.plot(epochs, cost_history)
+    plt.xlabel('epochs')
+    plt.ylabel('Cost J')
+    plt.title('Cost history plot')
+    plt.show()
+    return
 
 def main():
     mnist_test = 'mnist_test.csv' #'/content/drive/MyDrive/MachineLearning/DigitRecognition/mnist_test.csv'
@@ -35,7 +54,7 @@ def main():
     train_df = load_data(mnist_train, delimeter, labels)
     test_set = load_data(mnist_test, delimeter, labels)
     
-    # apply one-hot-encoding to data
+    # decrease dataset size
     # train_df = train_df[0 : int(train_df.shape[0]*.1)][:]
     # test_set = test_set[0 : int(train_df.shape[0]*.1)][:]
 
@@ -57,29 +76,24 @@ def main():
 
     # initialise neural network parameters
     n = train_set.shape[1] - 1
-    layer_config = [n, 784, 10]
+    layer_config = [n, int(784/8), 16, 10]
     alpha = 12
     activation_function = "leaky_ReLU"
     const_c = 0.1
+    
     # construct neural network
     NN = NeuralNetwork(n, alpha, layer_config, activation_func=activation_function, c=const_c)
     
+
     #train neural network
     epochs = 3
     Train_accuracies, Valid_accuracies, cost_hist = NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
-    #NN.evaluate(X_test, y_test)
+    NN.evaluate(X_test, y_test)
     print(NN.total_cost(X_test, y_test))
     
-    return Train_accuracies, Valid_accuracies, cost_hist
+    NeuralNetworkConfig.store_network_config(NN, 'test_model')
 
-def plot_cost_hist(cost_history: list):
-    epochs = [i+1 for i in range(len(cost_hist))]
-    plt.plot(epochs, cost_history)
-    plt.xlabel('epochs')
-    plt.ylabel('Cost J')
-    plt.title('Cost history plot')
-    plt.show()
-    return
+    return Train_accuracies, Valid_accuracies, cost_hist
 
 if __name__ == '__main__':
     Train_accuracies, Valid_accuracies, cost_hist = main()

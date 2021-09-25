@@ -26,13 +26,14 @@ class NeuralNetwork:
     """
 
     def __init__(self, feature_count, learning_rate, layer_dimensions=[1, 1], activation_func='Sigmoid', c=0):
+        
         # check if layer_dimensions has at least 2 elements.
         if(len(layer_dimensions) < 2):
             raise(Exception)
-        
+
         self.feature_count = feature_count
         self.alpha = learning_rate
-
+        self.layer_dimensions = layer_dimensions
         self.activation_func = activation_func
         self.c = 0
 
@@ -93,6 +94,7 @@ class NeuralNetwork:
     def reshape_vector(x):
         """Reshapes a column vector to insure it has dimension (n, 1)."""
         return x.reshape((np.shape(x)[0], 1))
+
 ##################Activation Functions############################
 
     @staticmethod
@@ -314,9 +316,12 @@ class NeuralNetwork:
 
         epoch = 1
         train_size = np.size(X_train, 0)
+        
         Train_accuracies = []
         Valid_accuracies = []
-        cost_hist = []
+        
+        train_cost_hist = []
+        test_cost_hist = []
 
         #train neural network
         while (epoch <= epochs):
@@ -330,14 +335,25 @@ class NeuralNetwork:
 
             train_accuracy = NeuralNetwork.evaluate(self, X_train, y_train)
             valid_accuracy = NeuralNetwork.evaluate(self, X_valid, y_valid)
-            epoch_cost = float(NeuralNetwork.total_cost(self, X_test, y_test))
+            
+            train_epoch_cost = float(NeuralNetwork.total_cost(self, X_train, y_train)) 
+            test_epoch_cost = float(NeuralNetwork.total_cost(self, X_test, y_test))
 
-            print(f'Epoch: [{epoch}]\nTrain accuracy: {train_accuracy}%\nValidation accuracy: {valid_accuracy}%\nTest cost: {epoch_cost}')
+            print(f'Epoch: [{epoch}]\nTrain cost: {train_epoch_cost}\nTest cost: {test_epoch_cost}\nTrain accuracy: {train_accuracy}%\nValidation accuracy: {valid_accuracy}%')
             print('-------------------------------------------------')
 
             Train_accuracies.append(train_accuracy)
             Valid_accuracies.append(valid_accuracy)
-            cost_hist.append(epoch_cost)
+            
+            train_cost_hist.append(train_epoch_cost)
+            test_cost_hist.append(test_epoch_cost)
+
             epoch += 1
 
-        return Train_accuracies, Valid_accuracies, cost_hist
+
+        self.accuracies['Train_set'] = Train_accuracies
+        self.accuracies['Validation_set'] = Valid_accuracies
+        self.cost_hist['Train_cost'] = train_cost_hist
+        self.cost_hist['Test_cost'] = test_cost_hist
+
+        return Train_accuracies, Valid_accuracies, test_cost_hist

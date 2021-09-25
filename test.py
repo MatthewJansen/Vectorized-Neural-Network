@@ -68,7 +68,7 @@ def main():
 
     x, y = get_sample(1, X_test, y_test)
 
-    NN.train(X_train, y_train, X_valid, y_valid, 8)
+    NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, 8)
     pred = NN.forward_propagate(x)
 
     print(f"Input:\n{x}\n\nExpected Output:\n{np.argmax(y)}\n\nPrediction:\n{np.argmax(pred)}\n\nCorrect: {evaluate(y, pred)}")
