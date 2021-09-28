@@ -1,5 +1,5 @@
 import numpy as np
-
+import time
 class NeuralNetwork:
     """
     NeuralNetwork
@@ -323,23 +323,37 @@ class NeuralNetwork:
         train_cost_hist = []
         test_cost_hist = []
 
+        total_training_time = 0
+
         #train neural network
         while (epoch <= epochs):
+            epoch_start = time.process_time()
+            
             #loop through
             for i in range(train_size):
+                # reshape input vector
                 x = NeuralNetwork.reshape_vector(X_train[i][:])
-            
+
+                # feed input , train & update neural network
                 NeuralNetwork.forward_propagate(self, x)
                 NeuralNetwork.back_propagate_error(self, y_train[i])
                 NeuralNetwork.update_network(self)
 
+            # compute epoch execution time and update total training time record
+            epoch_time = time.process_time() - epoch_start
+            total_training_time += epoch_time
+            
+            # compute training & valdation accuracy
             train_accuracy = NeuralNetwork.evaluate(self, X_train, y_train)
             valid_accuracy = NeuralNetwork.evaluate(self, X_valid, y_valid)
             
+            # compute training and test loss 
             train_epoch_cost = float(NeuralNetwork.total_cost(self, X_train, y_train)) 
             test_epoch_cost = float(NeuralNetwork.total_cost(self, X_test, y_test))
 
-            print(f'Epoch: [{epoch}]\nTrain cost: {train_epoch_cost}\nTest cost: {test_epoch_cost}\nTrain accuracy: {train_accuracy}%\nValidation accuracy: {valid_accuracy}%')
+            print(f'Epoch: [{epoch}]\t\tTime elapsed: [{epoch_time}s]')
+            print(f'Train cost: {train_epoch_cost}\t\tTest cost: {test_epoch_cost}')
+            print(f'Train accuracy: {train_accuracy}%\t\tValidation accuracy: {valid_accuracy}%')
             print('-------------------------------------------------')
 
             Train_accuracies.append(train_accuracy)
@@ -350,6 +364,7 @@ class NeuralNetwork:
 
             epoch += 1
 
+        print(f'Total training time: {total_training_time}s')
 
         self.accuracies['Train_set'] = Train_accuracies
         self.accuracies['Validation_set'] = Valid_accuracies

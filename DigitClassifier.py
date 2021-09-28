@@ -34,7 +34,7 @@ def encode_output(y):
     encoded_vec[y] = 1
     return encoded_vec
 
-def plot_cost_hist(cost_history: list):
+def plot_cost_hist(cost_history: list) -> None:
     epochs = [i+1 for i in range(len(cost_history))]
     plt.plot(epochs, cost_history)
     plt.xlabel('epochs')
@@ -44,8 +44,8 @@ def plot_cost_hist(cost_history: list):
     return
 
 def main():
-    mnist_test = 'mnist_test.csv' #'/content/drive/MyDrive/MachineLearning/DigitRecognition/mnist_test.csv'
-    mnist_train = 'mnist_train.csv' #'/content/drive/MyDrive/MachineLearning/DigitRecognition/mnist_train.csv'
+    mnist_test = 'mnist_test.csv'
+    mnist_train = 'mnist_train.csv'
 
     # get datasets
     delimeter = ','
@@ -76,7 +76,7 @@ def main():
 
     # initialise neural network parameters
     n = train_set.shape[1] - 1
-    layer_config = [n, int(784/8), 16, 10]
+    layer_config = [n, int(784/4), 10]
     alpha = 12
     activation_function = "leaky_ReLU"
     const_c = 0.1
@@ -92,9 +92,9 @@ def main():
     print(NN.total_cost(X_test, y_test))
     
     NeuralNetworkConfig.store_network_config(NN, 'test_model')
+    plot_cost_hist(cost_hist)
 
-    return Train_accuracies, Valid_accuracies, cost_hist
+    return
 
 if __name__ == '__main__':
-    Train_accuracies, Valid_accuracies, cost_hist = main()
-    plot_cost_hist(cost_hist)
+    main()

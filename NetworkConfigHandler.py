@@ -3,7 +3,12 @@ import numpy as np
 from NeuralNetwork import NeuralNetwork
 
 class NeuralNetworkConfig:
+    """
+    NeuralNetworkConfig
+    -------------------
+    Provides store and load features for NeuralNetwork objects.
 
+    """
     def __init__(self) -> None:
         pass
     
@@ -57,9 +62,9 @@ class NeuralNetworkConfig:
         
         feature_count = network_parameters['feature_count'] 
         alpha = network_parameters['alpha']
-        layer_dimensions= network_parameters['layer_dimensions'] 
+        layer_dimensions = network_parameters['layer_dimensions'] 
         activation_func = network_parameters['activation_func']
-        c= network_parameters['c']
+        c = network_parameters['c']
 
         #create NeuralNetwork object
         NN = NeuralNetwork(feature_count, alpha, layer_dimensions=layer_dimensions, activation_func=activation_func, c=c)
