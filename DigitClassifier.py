@@ -34,11 +34,15 @@ def encode_output(y):
     encoded_vec[y] = 1
     return encoded_vec
 
-def plot_cost_hist(cost_history: list) -> None:
-    epochs = [i+1 for i in range(len(cost_history))]
-    plt.plot(epochs, cost_history)
+def plot_cost_hist(cost_history: dict) -> None:
+    hist1 = cost_history['Train_cost']
+    hist2 = cost_history['Test_cost']
+    epochs = [i+1 for i in range(len(hist1))]
+    plt.plot(epochs, hist1, label='Training Cost', color='blue')
+    plt.plot(epochs, hist2, label='Testing Cost', color='green')    
     plt.xlabel('epochs')
     plt.ylabel('Cost J')
+    plt.legend()
     plt.title('Cost history plot')
     plt.show()
     return
@@ -86,12 +90,14 @@ def main():
     
 
     #train neural network
-    epochs = 3
-    Train_accuracies, Valid_accuracies, cost_hist = NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
-    NN.evaluate(X_test, y_test)
-    print(NN.total_cost(X_test, y_test))
+    epochs = 10
+    # Train_accuracies, Valid_accuracies, cost_hist = NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
+    # NN.evaluate(X_test, y_test)
+    # print(NN.total_cost(X_test, y_test))
+    # NeuralNetworkConfig.store_network_config(NN, 'test_model')
     
-    NeuralNetworkConfig.store_network_config(NN, 'test_model')
+    NN = NeuralNetworkConfig.load_network_config('test_model')
+    cost_hist = NN.cost_hist
     plot_cost_hist(cost_hist)
 
     return

@@ -371,4 +371,4 @@ class NeuralNetwork:
         self.cost_hist['Train_cost'] = train_cost_hist
         self.cost_hist['Test_cost'] = test_cost_hist
 
-        return Train_accuracies, Valid_accuracies, test_cost_hist
+        return

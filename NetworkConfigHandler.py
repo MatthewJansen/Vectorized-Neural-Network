@@ -65,10 +65,14 @@ class NeuralNetworkConfig:
         layer_dimensions = network_parameters['layer_dimensions'] 
         activation_func = network_parameters['activation_func']
         c = network_parameters['c']
+        cost_hist = network_parameters['cost_hist']
+        accuracies = network_parameters['accuracies']
 
         #create NeuralNetwork object
         NN = NeuralNetwork(feature_count, alpha, layer_dimensions=layer_dimensions, activation_func=activation_func, c=c)
         NN.neuralnetwork = neural_network_struct.item()
+        NN.cost_hist = cost_hist
+        NN.accuracies = accuracies
 
         return NN
 
