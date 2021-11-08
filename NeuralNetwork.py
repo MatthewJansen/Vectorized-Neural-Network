@@ -1,5 +1,7 @@
 import numpy as np
 import time
+
+from numpy.lib.function_base import select
 class NeuralNetwork:
     """
     NeuralNetwork
@@ -13,7 +15,8 @@ class NeuralNetwork:
         - Back-Propagation Algorithm
     - Train and Test features
 
-    Arguments:
+
+    @params
         - feature_count (int): Number of input features
         - learning_rate (float): Rate at which the Neural Network should learn
         - activation_func (str): Activation function to be used for the Neural Network
@@ -22,10 +25,12 @@ class NeuralNetwork:
                         - ReLU
                         - leaky_ReLU
         - layer_dimensions (list): A list of integers representing the number of neurons each layer should contain
-
+        - evaluation_functions (tuple): custom function to evaluate the output of the network (y_pred) with the expected output (y) 
+        - c (float): constant used as a parameter to the ReLU and leaky_ReLU function
+    
     """
 
-    def __init__(self, feature_count, learning_rate, layer_dimensions=[1, 1], activation_func='Sigmoid', c=0):
+    def __init__(self, feature_count, learning_rate, evaluation_functions: tuple, layer_dimensions=[1, 1], activation_func='Sigmoid', c=0):
         
         # check if layer_dimensions has at least 2 elements.
         if(len(layer_dimensions) < 2):
@@ -33,6 +38,7 @@ class NeuralNetwork:
 
         self.feature_count = feature_count
         self.alpha = learning_rate
+        self.encode_output, self.evaluation_func = evaluation_functions
         self.layer_dimensions = layer_dimensions
         self.activation_func = activation_func
         self.c = 0
@@ -175,13 +181,6 @@ class NeuralNetwork:
         output_layer = A[max(A.keys())]
 
         return output_layer
-
-    @staticmethod
-    def encode_output(y):
-        encoded_vec = np.zeros((10, 1))
-        encoded_vec[y] = 1
-        return encoded_vec
-
     
     def total_cost(self, X: np.ndarray, y: np.ndarray):
         cost_C = 0
@@ -189,11 +188,11 @@ class NeuralNetwork:
 
         for i in range(n):
             x_i = NeuralNetwork.reshape_vector(X[i])
-            y_i = NeuralNetwork.encode_output(y[i])
+            y_i = self.encode_output(y[i])
             pred = NeuralNetwork.forward_propagate(self, x_i)
-            cost_C += (1 / n) * sum(NeuralNetwork.cost(pred, y_i))
+            cost_C += sum(NeuralNetwork.cost(pred, y_i))
 
-        return cost_C
+        return (1 / n) * cost_C
 
     @staticmethod
     def cost(output, y):
@@ -229,7 +228,7 @@ class NeuralNetwork:
         b = self.neuralnetwork['bias']
         A = self.neuralnetwork['activation']
         z = self.neuralnetwork['z']
-        y_encoded = NeuralNetwork.encode_output(y)
+        y_encoded = self.encode_output(y)
         deltas = {}
 
         #Compute delta for the output layer
@@ -265,7 +264,7 @@ class NeuralNetwork:
 
         final_layer = max(A.keys())
         dw[final_layer] = np.dot(deltas[final_layer], A[final_layer - 1].T)
-        db[final_layer] = (1 / self.feature_count) * np.sum(deltas[final_layer], axis=1, keepdims=True)
+        db[final_layer] = (1 / self.feature_count) * deltas[final_layer]#np.sum(deltas[final_layer], axis=1, keepdims=True)
 
         #compute differentials for weights and biases of each layer in the network
         #starting at the output layer
@@ -278,7 +277,7 @@ class NeuralNetwork:
                 func_deriv = self.activation_deriv(z[layer - 1])
             
             dw[layer - 1] = (1 / self.feature_count) * np.dot(W[layer].T, deltas[layer]) * func_deriv
-            db[layer - 1] = (1 / self.feature_count) * np.sum(deltas[layer - 1], axis=1, keepdims=True)
+            db[layer - 1] = (1 / self.feature_count) * deltas[layer - 1] #np.sum(deltas[layer - 1], axis=1, keepdims=True)
 
         #compute new weights and biases
         for i in W.keys():
@@ -299,13 +298,11 @@ class NeuralNetwork:
 
         for i in range(test_size):
             x = NeuralNetwork.reshape_vector(X[i][:])
-            target = NeuralNetwork.encode_output(y[i])
             prediction = NeuralNetwork.forward_propagate(self, x)
-          
-            if (np.argmax(target) == np.argmax(prediction)):
-                positive += 1
-            else:
-                negative += 1
+
+            eval = self.evaluation_func(y[i], prediction)
+            positive += 1 if (eval == 1) else 0
+            negative += 1 if (eval == 0) else 0
 
         accuracy = (positive / test_size) * 100
 
@@ -351,8 +348,8 @@ class NeuralNetwork:
             train_epoch_cost = float(NeuralNetwork.total_cost(self, X_train, y_train)) 
             test_epoch_cost = float(NeuralNetwork.total_cost(self, X_test, y_test))
 
-            print(f'Epoch: [{epoch}]\t\tTime elapsed: [{epoch_time}s]')
-            print(f'Train cost: {train_epoch_cost}\t\tTest cost: {test_epoch_cost}')
+            print(f'Epoch: [{epoch}]\t\tTime elapsed: [{epoch_time}s]\n')
+            print(f'Train cost: {train_epoch_cost}\t\t\tTest cost: {test_epoch_cost}')
             print(f'Train accuracy: {train_accuracy}%\t\tValidation accuracy: {valid_accuracy}%')
             print('-------------------------------------------------')
 

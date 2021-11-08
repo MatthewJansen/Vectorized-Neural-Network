@@ -85,18 +85,34 @@ def main():
     activation_function = "leaky_ReLU"
     const_c = 0.1
     
-    # construct neural network
-    NN = NeuralNetwork(n, alpha, layer_config, activation_func=activation_function, c=const_c)
-    
+    def encode_y(y):#construct expected output encoding
+        encoded_y = np.zeros(((10, 1)))
+        encoded_y[y] = 1
 
+        return encoded_y
+
+
+    # define output & target vector comparison function
+    def evaluate_output(y: np.ndarray, y_pred: np.ndarray):
+        #construct expected output encoding
+        y_encode = encode_y(y)
+        #compare prediction(y_pred) to expected output(encoded_y)
+        if (np.argmax(y_pred) == np.argmax(y_encode)):
+            return 1
+        return 0
+
+    # construct neural network
+    eval_functions = (encode_y, evaluate_output)
+    NN = NeuralNetwork(n, alpha, eval_functions, layer_config, activation_func=activation_function, c=const_c)
+    
     #train neural network
     epochs = 10
-    # Train_accuracies, Valid_accuracies, cost_hist = NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
-    # NN.evaluate(X_test, y_test)
-    # print(NN.total_cost(X_test, y_test))
-    # NeuralNetworkConfig.store_network_config(NN, 'test_model')
+    NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
+    NN.evaluate(X_test, y_test)
+    print(NN.total_cost(X_test, y_test))
+    NeuralNetworkConfig.store_network_config(NN, 'test_model2')
     
-    NN = NeuralNetworkConfig.load_network_config('test_model')
+    #NN = NeuralNetworkConfig.load_network_config('test_model')
     cost_hist = NN.cost_hist
     plot_cost_hist(cost_hist)
 
