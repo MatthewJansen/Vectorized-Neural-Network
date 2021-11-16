@@ -59,13 +59,12 @@ def main():
     test_set = load_data(mnist_test, delimeter, labels)
     
     # decrease dataset size
-    # train_df = train_df[0 : int(train_df.shape[0]*.1)][:]
-    # test_set = test_set[0 : int(train_df.shape[0]*.1)][:]
+    train_df = train_df[0 : int(train_df.shape[0]*.1)][:]
+    test_set = test_set[0 : int(train_df.shape[0]*.1)][:]
 
     # split training data into training & validation sets
     split = 0.1
     train_set, valid_set = generate_validation_set(train_df, split)
-    print(train_set.shape, valid_set.shape)
     
     #construct input output vector sets
     set_splits = lambda digit_set: (digit_set.iloc[:, 1:].to_numpy(), digit_set.iloc[:, 0].to_numpy())
@@ -80,7 +79,7 @@ def main():
 
     # initialise neural network parameters
     n = train_set.shape[1] - 1
-    layer_config = [n, int(784/4), 10]
+    layer_config = [n, int(784/2), 200, 10]
     alpha = 12
     activation_function = "leaky_ReLU"
     const_c = 0.1
@@ -103,14 +102,14 @@ def main():
 
     # construct neural network
     eval_functions = (encode_y, evaluate_output)
-    NN = NeuralNetwork(n, alpha, eval_functions, layer_config, activation_func=activation_function, c=const_c)
+    NN = NeuralNetwork(n, alpha, layer_dimensions=layer_config, activation_func=activation_function, c=const_c)
     
     #train neural network
-    epochs = 10
+    epochs = 8
     NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
     NN.evaluate(X_test, y_test)
     print(NN.total_cost(X_test, y_test))
-    NeuralNetworkConfig.store_network_config(NN, 'test_model2')
+    NeuralNetworkConfig.store_network_config(NN, 'test_model3')
     
     #NN = NeuralNetworkConfig.load_network_config('test_model')
     cost_hist = NN.cost_hist

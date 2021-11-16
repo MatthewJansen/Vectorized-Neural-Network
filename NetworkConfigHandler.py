@@ -30,7 +30,7 @@ class NeuralNetworkConfig:
         network_struct = network_vars['neuralnetwork']
 
         #delete non Json serializable variables
-        [network_vars.pop(k) for k in ['activation', 'activation_deriv', 'neuralnetwork', 'evaluation_function']]
+        [network_vars.pop(k) for k in ['activation', 'activation_deriv', 'neuralnetwork']]
 
         #save neural network structure data
         np.save(f'{model_name}_data', network_struct, allow_pickle=True)
@@ -38,7 +38,8 @@ class NeuralNetworkConfig:
         #dump remaining neural network variables into json file
         with open(f'{model_name}_params.json', 'w') as file:
             json.dump(network_vars, file)
-        
+        file.close() 
+              
         return 
 
     @staticmethod
@@ -50,7 +51,8 @@ class NeuralNetworkConfig:
         model_name: (str) -> name of the NeuralNetwork object.
 
         @returns
-4        NN: (NeuralNetwork) -> NeuralNetwork object created with stored variables
+        NN: (NeuralNetwork) -> NeuralNetwork object created with stored variables
+        
         '''
 
         network_parameters = {}
