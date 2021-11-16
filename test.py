@@ -70,7 +70,7 @@ def main():
 
     NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, 8)
     pred = NN.forward_propagate(x)
-
+    print(f"this is pred {pred}")
     print(f"Input:\n{x}\n\nExpected Output:\n{np.argmax(y)}\n\nPrediction:\n{np.argmax(pred)}\n\nCorrect: {evaluate(y, pred)}")
 
     return
