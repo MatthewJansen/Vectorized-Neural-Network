@@ -38,14 +38,13 @@ class ActivationFunctions:
             'ReLU': [ActivationFunctions.ReLU, ActivationFunctions.ReLU_deriv],
             'leaky_ReLU': [ActivationFunctions.leaky_ReLU, ActivationFunctions.leaky_ReLU_deriv]
         }
+
         # check if the functions requested are defined and return if true
-        if (activation_name in func_set.keys()):
-            return func_set[activation_name][0], func_set[activation_name][1]
-        # raise error if not true
-        else:
+        if (activation_name not in func_set.keys()):
             raise(ValueError(
-                f"Activation function named \"{activation_name}\" is not defined. Check the spelling of activation_name or if the function is listed."
-            ))
+                f"Activation function named \"{activation_name}\" is not defined. Check the spelling of activation_name or if the desired function is listed."))
+
+        return func_set[activation_name][0], func_set[activation_name][1]
 
     @staticmethod
     def sigmoid(z):
