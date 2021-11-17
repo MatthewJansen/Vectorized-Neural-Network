@@ -45,7 +45,7 @@ class NeuralNetwork():
         if (activation_func == 'leaky_ReLU') and (c > 0):
             self.c = c
 
-        self.activation, self.activation_deriv = ActivationFunctions.set_activation_func(activation_func)
+        self.activation, self.activation_deriv = ActivationFunctions.get_activation_pair(activation_func)
 
         self.neuralnetwork = {}
         self.neuralnetwork['z'] = {}

@@ -20,20 +20,32 @@ class ActivationFunctions:
         pass
 
     @staticmethod
-    def construct_activation_pair(activation_name: str):
+    def get_activation_pair(activation_name: str):
+        '''
+        Used to construct and return a tuple containing the desired activation 
+        function along with its derivative.  
+
+        @params
+        - activation_name: (str) -> name of the desired activation function for the Neural Network
+
+        @returns
+        - (tuple) -> the desired activation function along with its derivative 
+        '''
+        # construct dict covering all the available pair functions (f and f')
         func_set = {
             'sigmoid': [ActivationFunctions.sigmoid, ActivationFunctions.sigmoid_deriv],
             'tanh': [ActivationFunctions.tanh, ActivationFunctions.tanh_deriv],
             'ReLU': [ActivationFunctions.ReLU, ActivationFunctions.ReLU_deriv],
             'leaky_ReLU': [ActivationFunctions.leaky_ReLU, ActivationFunctions.leaky_ReLU_deriv]
         }
-
+        # check if the functions requested are defined and return if true
         if (activation_name in func_set.keys()):
             return func_set[activation_name][0], func_set[activation_name][1]
-
+        # raise error if not true
         else:
             raise(ValueError(
-                f"Activation function named \"{activation_name}\" is not defined."))
+                f"Activation function named \"{activation_name}\" is not defined. Check the spelling of activation_name or if the function is listed."
+            ))
 
     @staticmethod
     def sigmoid(z):
@@ -47,7 +59,6 @@ class ActivationFunctions:
         - (np.ndarray) -> function evaluated vector or object
 
         '''
-
         return (1 / (1 + np.exp(-1*z)))
 
     @staticmethod

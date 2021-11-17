@@ -38,7 +38,6 @@ class NeuralNetworkConfig:
         #dump remaining neural network variables into json file
         with open(f'{model_name}_params.json', 'w') as file:
             json.dump(network_vars, file)
-        file.close() 
               
         return 
 
@@ -56,12 +55,14 @@ class NeuralNetworkConfig:
         '''
 
         network_parameters = {}
-
+        # read Neural Network data from .json file
         with open(f'{model_name}_params.json') as json_file:
             network_parameters = json.load(json_file)
-
+        
+        # load Neural Network structure from numpy file
         neural_network_struct = np.load(f'{model_name}_data.npy', allow_pickle=True)
         
+        # assign Neural Network variables 
         feature_count = network_parameters['feature_count'] 
         alpha = network_parameters['alpha']
         layer_dimensions = network_parameters['layer_dimensions'] 
