@@ -6,38 +6,65 @@ import matplotlib.pyplot as plt
 
 
 def load_data(filename: str, delimeter: str, labels: list):
+    '''
+    Used to load the data from a .csv file into a pandas DataFrame.
+
+    @params
+    - filename: (str) -> name of the .csv file containing all the data  
+    - delimeter: (str) -> character(s) by which the data entries are seperated
+    - labels: (list) -> labels for the columns in the DataFrame
+
+    @returns
+    - (pd.DataFrame) -> DataFrame containing data for the Neural Network
+    '''
     return pd.read_csv(filename, sep=delimeter, names=labels)
 
 
 def generate_validation_set(training_set: pd.DataFrame, split_ratio: float):
+    '''
+    Used to generate a validation dataset by means of extracting a ratio of
+    data from the original training dataset.
+
+    @params
+    - training_set: (pd.DataFrame) -> original training dataset
+    - split_ratio: (float) -> ratio of data which the validation set should receive
+    
+    @returns
+    - new_train_set, valid_set: (tuple[pd.DataFrame, pd.DataFrame]) -> new training and validation datasets 
+
+    Note:
+
+    split_ratio is the size for the validation set, i.e. if the ratio is 0.2, then the 
+    ratio going to the training set is 0.8 (80%) and the validation set will 0.2 (20%) 
+    of the data.
+    '''
+    #get training set size
     n = training_set.shape[0]
-
+    # copy and shuffle training set
     temp_set = training_set.sample(frac=1, random_state=42).reset_index(drop=True)
-
+    #split data into respective ratios
     new_train_set = temp_set[0: int(n * (1 - split_ratio))][:]
     valid_set = temp_set[int(n * (1 - split_ratio)):][:]
 
     return new_train_set, valid_set
 
-def encode_output(y):
-    """
-    Encodes the expected output from the dataset into a sparse column vector
-    containing the value 1 at the index assigned to the output.
-
-    @param
-    y:  output from dataset 
-    
-    Note - this function should be written to accommodate the evaluation for 
-    the Neural Network. 
-    """
-    encoded_vec = np.zeros((10, 1))
-    encoded_vec[y] = 1
-    return encoded_vec
 
 def plot_cost_hist(cost_history: dict) -> None:
+    '''
+    Plot cost data from a trained Neural Network.
+
+    @params
+    - cost_history: (dict) -> dictionary containing costs for all epochs from a trained Neural Network 
+
+    @returns
+    - None
+    '''
+    # get cost data for training and testing set
     hist1 = cost_history['Train_cost']
     hist2 = cost_history['Test_cost']
     epochs = [i+1 for i in range(len(hist1))]
+    
+    # plot data
     plt.plot(epochs, hist1, label='Training Cost', color='blue')
     plt.plot(epochs, hist2, label='Testing Cost', color='green')    
     plt.xlabel('epochs')
@@ -45,6 +72,7 @@ def plot_cost_hist(cost_history: dict) -> None:
     plt.legend()
     plt.title('Cost history plot')
     plt.show()
+
     return
 
 def main():
@@ -66,7 +94,7 @@ def main():
     split = 0.1
     train_set, valid_set = generate_validation_set(train_df, split)
     
-    #construct input output vector sets
+    # construct input output vector sets
     set_splits = lambda digit_set: (digit_set.iloc[:, 1:].to_numpy(), digit_set.iloc[:, 0].to_numpy())
     X_train, y_train = set_splits(train_set)
     X_valid, y_valid = set_splits(valid_set)
@@ -84,24 +112,7 @@ def main():
     activation_function = "leaky_ReLU"
     const_c = 0.1
     
-    def encode_y(y):#construct expected output encoding
-        encoded_y = np.zeros(((10, 1)))
-        encoded_y[y] = 1
-
-        return encoded_y
-
-
-    # define output & target vector comparison function
-    def evaluate_output(y: np.ndarray, y_pred: np.ndarray):
-        #construct expected output encoding
-        y_encode = encode_y(y)
-        #compare prediction(y_pred) to expected output(encoded_y)
-        if (np.argmax(y_pred) == np.argmax(y_encode)):
-            return 1
-        return 0
-
     # construct neural network
-    eval_functions = (encode_y, evaluate_output)
     NN = NeuralNetwork(n, alpha, layer_dimensions=layer_config, activation_func=activation_function, c=const_c)
     
     #train neural network
@@ -109,9 +120,13 @@ def main():
     NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
     NN.evaluate(X_test, y_test)
     print(NN.total_cost(X_test, y_test))
-    NeuralNetworkConfig.store_network_config(NN, 'test_model3')
     
+    # store or load Neural Network data here
+    # ATTENTION - take note of the store and load methods
+    NeuralNetworkConfig.store_network_config(NN, 'test_model3')
     #NN = NeuralNetworkConfig.load_network_config('test_model')
+    
+    # plot cost data
     cost_hist = NN.cost_hist
     plot_cost_hist(cost_hist)
 
