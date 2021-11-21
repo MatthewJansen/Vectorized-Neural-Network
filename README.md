@@ -19,5 +19,5 @@ The process of training a neural network consists of three steps:
   3. Update Network:
   Finally, based on the results from backpropagating the output, the new weights and biases of the neural network are computed and updated.
   
-(See documented discussion for a detailed description of the above list steps in this repo named 'Simple, Fully Connected, Vectorized Neural Network.pdf')
+(See documented discussion for a detailed description of the above list steps in this repo named 'NeuralNetwork.pdf')
 P.S. I will update this readme at a later stage.
