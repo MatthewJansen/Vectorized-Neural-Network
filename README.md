@@ -6,7 +6,6 @@ Python implementation for a fully connected, vectorized neural network which I w
 
   - Recommended python version: Python 3.8.10 64-bit 
   - Make sure to unzip mnist_data and to add the raw data to the same directory as the code before playing with the code. 🙂
-  - There are inconsistencies within the code, however the main focus is the neural network datastructure and not the DigitClassifier.py exmaple.
 
 Neural networks computational graph structure which consists of layers of nodes called ’neurons’ which have biases and connecting weighted edges called ’synapses’.
 
