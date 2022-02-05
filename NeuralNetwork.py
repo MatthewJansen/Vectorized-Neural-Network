@@ -132,7 +132,7 @@ class NeuralNetwork():
         b = self.neuralnetwork['bias']
         A = self.neuralnetwork['activation']
         z = self.neuralnetwork['z']
-        A[0] = input_layer
+        A[0] = NeuralNetwork.reshape_vector(input_layer)
 
         layers = list(W.keys())
         final_layer = layers[-1]
@@ -186,14 +186,15 @@ class NeuralNetwork():
 
     def total_cost(self, X: np.ndarray, y: np.ndarray):
         '''
-        [Description]
+        Computes and returns the average cost to compute outputs for all samples 
+        contained in a given dataset.
 
         @params
         - X: (np.ndarray) -> Input dataset 
         - y: (np.ndarray) -> Target output dataset
 
         @returns
-        - (float) -> Average cost of a Neural Network relative to the provided data
+        - (float) -> Average cost of a Neural Network relative to the provided dataset
         '''
         # initialise useful variables
         cost_C = 0
@@ -214,7 +215,7 @@ class NeuralNetwork():
     @staticmethod
     def cost(output, y):
         '''
-        Computes the cost of the neural network output.
+        Computes and returns the cost of the neural network output.
 
         @params
         - output: Neural network output (commonly referred to as y_pred)
@@ -396,7 +397,7 @@ class NeuralNetwork():
         # compute accuracies for each entry
         for i in range(dataset_size):
             # forward-propagate input
-            x = NeuralNetwork.reshape_vector(X[i][:])
+            x = X[i][:]
             prediction = NeuralNetwork.forward_propagate(self, x)
 
             # compare network output to expected output
@@ -436,7 +437,7 @@ class NeuralNetwork():
         Valid_accuracies = []
 
         train_cost_hist = []
-        test_cost_hist = []
+        valid_cost_hist = []
 
         total_training_time = 0
 
@@ -466,14 +467,14 @@ class NeuralNetwork():
             # compute training and test loss
             train_epoch_cost = float(
                 NeuralNetwork.total_cost(self, X_train, y_train))
-            test_epoch_cost = float(
-                NeuralNetwork.total_cost(self, X_test, y_test))
+            valid_epoch_cost = float(
+                NeuralNetwork.total_cost(self, X_valid, y_valid))
 
             # print epoch stats
             print(
                 f'Epoch: [{epoch}]\t\tTime elapsed: [{float(epoch_time)}s]\n')
             print(
-                f'Train cost: {train_epoch_cost}\t\t\tTest cost: {test_epoch_cost}')
+                f'Train cost: {train_epoch_cost}\t\t\tValidation cost: {valid_epoch_cost}')
             print(
                 f'Train accuracy: {train_accuracy}%\t\tValidation accuracy: {valid_accuracy}%')
             print('-------------------------------------------------')
@@ -483,17 +484,21 @@ class NeuralNetwork():
             Valid_accuracies.append(valid_accuracy)
 
             train_cost_hist.append(train_epoch_cost)
-            test_cost_hist.append(test_epoch_cost)
+            valid_cost_hist.append(valid_epoch_cost)
 
             # update epoch
             epoch += 1
 
+        test_cost = NeuralNetwork.total_cost(self, X_test, y_test)
+        test_accuracy = NeuralNetwork.evaluate(self, X_test, y_test)
+        
+        print(f'Test cost: {test_cost}\t\t\tTest accuracy: {test_accuracy}%')
         print(f'Total training time: {total_training_time}s')
 
         # set useful data for storage purposes
         self.accuracies['Train_set'] = Train_accuracies
         self.accuracies['Validation_set'] = Valid_accuracies
         self.cost_hist['Train_cost'] = train_cost_hist
-        self.cost_hist['Test_cost'] = test_cost_hist
+        self.cost_hist['Validation_cost'] = valid_cost_hist
 
         return
