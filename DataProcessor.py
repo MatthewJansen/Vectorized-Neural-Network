@@ -42,13 +42,13 @@ class DataProcessor:
         '''
         # get training set size
         n = dataset.shape[0]
-        
+
         # copy and shuffle training set
         temp_set = dataset.copy()
 
         # split data into respective ratios
         mid_index = int(n * (1 - split_ratio))
-        split_set1 = temp_set[0: mid_index][:] #excludes mid index
+        split_set1 = temp_set[0: mid_index][:]  # excludes mid index
         split_set2 = temp_set[int(n * (1 - split_ratio)):][:]
 
         return split_set1, split_set2
@@ -69,27 +69,53 @@ class DataProcessor:
         return copy_set.sample(frac=1, random_state=42).reset_index(drop=True)
 
     @staticmethod
-    def normilize_dataset(dataset: pd.DataFrame):
+    def normalize_dataset(dataset: pd.DataFrame):
         '''
-        [Description]
+        Normalize features in a given dataset use min-max feature scaling. 
+        Data is scaled to match the range [0, 1]. 
 
         @params
+        - dataset: (pd.DataFrame) -> given dataset to be scaled
 
         @returns
+        - norm_set: (pd.DataFrame) -> scaled version of the given dataset
         '''
         temp_set = dataset.copy()
         scale_feature = lambda feature: (feature - feature.min()) / (feature.max() - feature.min())
         norm_set = temp_set[:].apply(scale_feature, axis=1)
 
         return norm_set
-    
+
     @staticmethod
-    def select_select_minibatch(dataset: pd.DataFrame):
+    def generate_minibatchs(dataset: pd.DataFrame, batch_size: int, shuffle: bool = False):
         '''
-        [Description]
+        Generates a set of mini-batches with requested batch size from a given dataset.
 
         @params
+        - dataset: (pd.DataFrame) -> dataset from which mini-batches are generated
+        - batch_size: (int) -> number of samples each mini-batch should contain
+        - shuffle: (bool) -> conditional for shuffling samples of mini-batches
 
         @returns
+        - mini_batches: (dict[int, DataFrame]) -> set of generated mini-batches
         '''
-        pass #To be added
+
+        try:
+            # check if requested batch size is smaller than number of samples 
+            if batch_size > dataset.shape[0]:
+                raise ValueError # batch size too large, raise error
+            
+            # split dataset into batches 
+            mini_batches = [(dataset[i: i + batch_size]).reset_index()
+                        for i in range(0, dataset.shape[0], batch_size)]
+
+            if shuffle:
+                mini_batches = {i: DataProcessor.shuffle_dataset(mini_batches[i]) for i in range(len(mini_batches))}    
+            else:
+                mini_batches = {i: mini_batches[i] for i in range(len(mini_batches))}
+            
+            return mini_batches
+        
+        except ValueError as e:
+            print(f"\nERROR:\tRequested batch size too large for this operation.\n\tNumber of samples in dataset: {dataset.shape[0]}\n\tbatch_size: {batch_size}\n")
+            
