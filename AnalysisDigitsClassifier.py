@@ -90,7 +90,7 @@ def test_gradient(NN: NeuralNetwork, x, y, epsilon=1e-4):
     pred_prime = NN.forward_propagate(x - epsilon)
     grad_prime = NN.cost_gradient(pred_prime, y)
     estimate = (grad - grad_prime) / (2 * epsilon)
-    print(LA.norm(estimate))
+    return LA.norm(estimate)
 
 
 def main():
@@ -124,14 +124,14 @@ def main():
     X_test = X_test / 255
 
     #load data into neural network data structure
-    model_name = 'model3'
+    model_name = 'PreTrained_Models/model6'
     NN = NeuralNetworkConfig.load_network_config(model_name)
-    test_gradient(NN, X_train[0], y_train[0])
+    print(test_gradient(NN, X_train[0], y_train[0]))
     # plot cost data
-    # cost_hist = NN.cost_hist
-    # plot_cost_hist(cost_hist)
-    # display_digits(NN, X_test, y_test, 20)
-    # compare_digits_classified(NN, X_test, y_test)
+    cost_hist = NN.cost_hist
+    plot_cost_hist(cost_hist)
+    display_digits(NN, X_test, y_test, 20)
+    compare_digits_classified(NN, X_test, y_test)
     
     return
 

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from NeuralNetwork import NeuralNetwork
 from NetworkConfigHandler import NeuralNetworkConfig
-from DataProcessor import DataPipeline
+from DataProcessor import DataProcessor
 import matplotlib.pyplot as plt
 
 
@@ -14,8 +14,8 @@ def main():
     delimeter = ','
     labels = ['id'] + [f'pixel_{i}' for i in range(784)]
 
-    train_df = DataPipeline.load_data(mnist_train, delimeter, labels)
-    test_set = DataPipeline.load_data(mnist_test, delimeter, labels)
+    train_df = DataProcessor.load_data(mnist_train, delimeter, labels)
+    test_set = DataProcessor.load_data(mnist_test, delimeter, labels)
     
     # decrease dataset size
     # train_df = train_df[0 : int(train_df.shape[0]*.1)][:]
@@ -23,7 +23,7 @@ def main():
 
     # split training data into training & validation sets
     split = 0.2
-    train_set, valid_set = DataPipeline.generate_validation_set(train_df, split)
+    train_set, valid_set = DataProcessor.split_dataset(train_df, split) #generate_validation_set(train_df, split)
     
     # construct input output vector sets
     set_splits = lambda digit_set: (digit_set.iloc[:, 1:].to_numpy(), digit_set.iloc[:, 0].to_numpy())
@@ -47,13 +47,13 @@ def main():
     NN = NeuralNetwork(n, alpha, layer_dimensions=layer_config, activation_func=activation_function, c=const_c)
     
     #train neural network
-    epochs = 4
+    epochs = 5
     NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
     NN.evaluate(X_test, y_test)
     
     # store Neural Network data here
     # ATTENTION - take note of the store and load methods
-    model_name = 'model5'
+    model_name = 'PreTrained_Models/model6'
     NeuralNetworkConfig.store_network_config(NN, model_name)
     
     return
