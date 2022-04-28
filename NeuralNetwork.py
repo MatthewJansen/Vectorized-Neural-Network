@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import datetime
 from ActivationFunctions import ActivationFunctions
 
 
@@ -429,6 +430,9 @@ class NeuralNetwork():
         @returns
         - None
         '''
+        initial_feedback = f'Data pre-processing complete, training initiated...\n' \
+            + f'================================================='
+        print(initial_feedback)
         # initialise useful variables
         epoch = 1
         train_size = np.size(X_train, 0)
@@ -441,10 +445,19 @@ class NeuralNetwork():
 
         total_training_time = 0
 
+        def format_time(time):
+                s, ms = divmod(time, 1)
+                m, s = divmod(s / 60, 1)
+                s = round(s * 60)
+                h, m = divmod(m / 60, 1)
+                m = round(m * 60)
+
+                return f'{int(h)}h{int(m)}m{int(s)}.{str(round(ms, 4))[2:]}s'
+
         # train neural network
         while (epoch <= epochs):
             # record training time
-            epoch_start = time.process_time()
+            epoch_start = time.time()
 
             # loop through
             for i in range(train_size):
@@ -457,7 +470,7 @@ class NeuralNetwork():
                 NeuralNetwork.update_network(self)
 
             # compute epoch execution time and update total training time record
-            epoch_time = time.process_time() - epoch_start
+            epoch_time = time.time() - epoch_start
             total_training_time += epoch_time
 
             # compute training & valdation accuracy
@@ -471,13 +484,11 @@ class NeuralNetwork():
                 NeuralNetwork.total_cost(self, X_valid, y_valid))
 
             # print epoch stats
-            print(
-                f'Epoch: [{epoch}]\t\tTime elapsed: [{float(epoch_time)}s]\n')
-            print(
-                f'Train cost: {train_epoch_cost}\t\t\tValidation cost: {valid_epoch_cost}')
-            print(
-                f'Train accuracy: {train_accuracy}%\t\tValidation accuracy: {valid_accuracy}%')
-            print('-------------------------------------------------')
+            feedback = f"Epoch: [{epoch}]\t\tTime elapsed: [{epoch_time}s => {format_time(epoch_time)}]\n\n" \
+                f'Train cost: {train_epoch_cost}\t\t\tValidation cost: {valid_epoch_cost}\n' \
+                f'Train accuracy: {round(train_accuracy, 4)}%\t\t\tValidation accuracy: {round(valid_accuracy, 4)}%\n' \
+                '-------------------------------------------------'
+            print(feedback)
 
             # store useful data in lists
             Train_accuracies.append(train_accuracy)
@@ -492,8 +503,10 @@ class NeuralNetwork():
         test_cost = NeuralNetwork.total_cost(self, X_test, y_test)
         test_accuracy = NeuralNetwork.evaluate(self, X_test, y_test)
         
-        print(f'Test cost: {test_cost}\t\t\tTest accuracy: {test_accuracy}%')
-        print(f'Total training time: {total_training_time}s')
+        final_feedback = f'Test cost: {test_cost}\t\t\tTest accuracy: {round(test_accuracy, 4)}%\n' \
+            + f'Total training time: {format_time(total_training_time)}\n' \
+            + f'================================================='
+        print(final_feedback)
 
         # set useful data for storage purposes
         self.accuracies['Train_set'] = Train_accuracies

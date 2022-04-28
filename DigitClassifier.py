@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from NeuralNetwork import NeuralNetwork
 from NetworkConfigHandler import NeuralNetworkConfig
-from DataProcessor import DataProcessor
+from DataPreProcessor import DataPreProcessor
 import matplotlib.pyplot as plt
 
 
@@ -14,16 +14,16 @@ def main():
     delimeter = ','
     labels = ['id'] + [f'pixel_{i}' for i in range(784)]
 
-    train_df = DataProcessor.load_data(mnist_train, delimeter, labels)
-    test_set = DataProcessor.load_data(mnist_test, delimeter, labels)
+    train_df = DataPreProcessor.load_data(mnist_train, delimeter, labels)
+    test_set = DataPreProcessor.load_data(mnist_test, delimeter, labels)
     
     # decrease dataset size
-    # train_df = train_df[0 : int(train_df.shape[0]*.1)][:]
-    # test_set = test_set[0 : int(train_df.shape[0]*.1)][:]
+    train_df = train_df[0 : int(train_df.shape[0]*.1)][:]
+    test_set = test_set[0 : int(train_df.shape[0]*.1)][:]
 
     # split training data into training & validation sets
     split = 0.2
-    train_set, valid_set = DataProcessor.split_dataset(train_df, split) #generate_validation_set(train_df, split)
+    train_set, valid_set = DataPreProcessor.split_dataset(train_df, split)
     
     # construct input output vector sets
     set_splits = lambda digit_set: (digit_set.iloc[:, 1:].to_numpy(), digit_set.iloc[:, 0].to_numpy())
@@ -32,13 +32,13 @@ def main():
     X_test, y_test = set_splits(test_set)
 
     # normalize input data
-    X_train = X_train / 255
-    X_valid = X_valid / 255
-    X_test = X_test / 255
+    X_train = DataPreProcessor.normalize_dataset(X_train)
+    X_valid = DataPreProcessor.normalize_dataset(X_valid)
+    X_test = DataPreProcessor.normalize_dataset(X_test)
 
     # initialise neural network parameters
     n = train_set.shape[1] - 1
-    layer_config = [n, 784, 784, 784, 10]
+    layer_config = [n, 100, 10]
     alpha = 12
     activation_function = "leaky_ReLU"
     const_c = 0.1
@@ -47,7 +47,7 @@ def main():
     NN = NeuralNetwork(n, alpha, layer_dimensions=layer_config, activation_func=activation_function, c=const_c)
     
     #train neural network
-    epochs = 5
+    epochs = 4
     NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
     NN.evaluate(X_test, y_test)
     

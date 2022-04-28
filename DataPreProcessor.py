@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-class DataProcessor:
+class DataPreProcessor:
 
     def __init__(self) -> None:
         pass
@@ -20,6 +20,7 @@ class DataProcessor:
         @returns
         - (pd.DataFrame) -> DataFrame containing data for the Neural Network
         '''
+        print(f'Reading data from {filename}')
         return pd.read_csv(filename, sep=delimeter, names=labels)
 
     @staticmethod
@@ -69,21 +70,23 @@ class DataProcessor:
         return copy_set.sample(frac=1, random_state=42).reset_index(drop=True)
 
     @staticmethod
-    def normalize_dataset(dataset: pd.DataFrame):
+    def normalize_dataset(dataset: np.ndarray):
         '''
         Normalize features in a given dataset use min-max feature scaling. 
         Data is scaled to match the range [0, 1]. 
 
         @params
         - dataset: (pd.DataFrame) -> given dataset to be scaled
-
+        
         @returns
         - norm_set: (pd.DataFrame) -> scaled version of the given dataset
         '''
-        temp_set = dataset.copy()
         scale_feature = lambda feature: (feature - feature.min()) / (feature.max() - feature.min())
-        norm_set = temp_set[:].apply(scale_feature, axis=1)
-
+        
+        norm_set = np.apply_along_axis(scale_feature, 1, dataset)
+        # temp_set = dataset.copy()
+        # norm_set = temp_set[:].apply(scale_feature, axis=1)
+        
         return norm_set
 
     @staticmethod
@@ -110,7 +113,7 @@ class DataProcessor:
                         for i in range(0, dataset.shape[0], batch_size)]
 
             if shuffle:
-                mini_batches = {i: DataProcessor.shuffle_dataset(mini_batches[i]) for i in range(len(mini_batches))}    
+                mini_batches = {i: DataPreProcessor.shuffle_dataset(mini_batches[i]) for i in range(len(mini_batches))}    
             else:
                 mini_batches = {i: mini_batches[i] for i in range(len(mini_batches))}
             

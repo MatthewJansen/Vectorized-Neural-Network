@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from NeuralNetwork import NeuralNetwork
 from NetworkConfigHandler import NeuralNetworkConfig
-from DataProcessor import DataProcessor
+from DataPreProcessor import DataPreProcessor
 
 def plot_cost_hist(cost_history: dict) -> None:
     '''
@@ -101,8 +101,8 @@ def main():
     delimeter = ','
     labels = ['id'] + [f'pixel_{i}' for i in range(784)]
 
-    train_df = DataProcessor.load_data(mnist_train, delimeter, labels)
-    test_set = DataProcessor.load_data(mnist_test, delimeter, labels)
+    train_df = DataPreProcessor.load_data(mnist_train, delimeter, labels)
+    test_set = DataPreProcessor.load_data(mnist_test, delimeter, labels)
     
     # decrease dataset size
     train_df = train_df[0 : int(train_df.shape[0]*.8)][:]
@@ -110,7 +110,7 @@ def main():
 
     # split training data into training & validation sets
     split = 0.2
-    train_set, valid_set = DataProcessor.split_dataset(train_df, split)
+    train_set, valid_set = DataPreProcessor.split_dataset(train_df, split)
     
     # construct input output vector sets
     set_splits = lambda digit_set: (digit_set.iloc[:, 1:].to_numpy(), digit_set.iloc[:, 0].to_numpy())
