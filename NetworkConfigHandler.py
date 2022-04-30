@@ -24,6 +24,8 @@ class NeuralNetworkConfig:
         @returns
         None
         '''
+        print('Preparing Neural Network data for storage...')
+        
         #get neural network variables
         network_vars = vars(NeuralNet)
         #copy neural network structure data 
@@ -32,13 +34,14 @@ class NeuralNetworkConfig:
         #delete non Json serializable variables
         [network_vars.pop(k) for k in ['activation', 'activation_deriv', 'neuralnetwork']]
 
+        print(f'Saving data...')
         #save neural network structure data
         np.save(f'{model_name}_data', network_struct, allow_pickle=True)
 
         #dump remaining neural network variables into json file
         with open(f'{model_name}_params.json', 'w') as file:
             json.dump(network_vars, file)
-              
+        print('Neural Network data stored successfully!')
         return 
 
     @staticmethod
@@ -53,7 +56,7 @@ class NeuralNetworkConfig:
         NN: (NeuralNetwork) -> NeuralNetwork object created with stored variables
         
         '''
-
+        print('Loading Neural Network data...')
         network_parameters = {}
         # read Neural Network data from .json file
         with open(f'{model_name}_params.json') as json_file:
@@ -71,11 +74,13 @@ class NeuralNetworkConfig:
         cost_hist = network_parameters['cost_hist']
         accuracies = network_parameters['accuracies']
 
+        print('Re-constructing Neural Network with loaded data...')
         #create NeuralNetwork object
         NN = NeuralNetwork(feature_count, alpha, layer_dimensions=layer_dimensions, activation_func=activation_func, c=c)
         NN.neuralnetwork = neural_network_struct.item()
         NN.cost_hist = cost_hist
         NN.accuracies = accuracies
+        print('Neural Network re-constructed and ready for usage!')
 
         return NN
 

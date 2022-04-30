@@ -1,8 +1,6 @@
 import numpy as np
 import time
-import datetime
 from ActivationFunctions import ActivationFunctions
-
 
 class NeuralNetwork():
     '''
@@ -452,7 +450,7 @@ class NeuralNetwork():
                 h, m = divmod(m / 60, 1)
                 m = round(m * 60)
 
-                return f'{int(h)}h{int(m)}m{int(s)}.{str(round(ms, 4))[2:]}s'
+                return f'{int(h)}h {int(m)}m {int(s)}.{str(round(ms, 4))[2:]}s'
 
         # train neural network
         while (epoch <= epochs):
@@ -484,7 +482,7 @@ class NeuralNetwork():
                 NeuralNetwork.total_cost(self, X_valid, y_valid))
 
             # print epoch stats
-            feedback = f"Epoch: [{epoch}]\t\tTime elapsed: [{epoch_time}s => {format_time(epoch_time)}]\n\n" \
+            feedback = f"Epoch: [{epoch}]\t\tExecution time: [{format_time(epoch_time)}]\n\n" \
                 f'Train cost: {train_epoch_cost}\t\t\tValidation cost: {valid_epoch_cost}\n' \
                 f'Train accuracy: {round(train_accuracy, 4)}%\t\t\tValidation accuracy: {round(valid_accuracy, 4)}%\n' \
                 '-------------------------------------------------'
@@ -503,9 +501,10 @@ class NeuralNetwork():
         test_cost = NeuralNetwork.total_cost(self, X_test, y_test)
         test_accuracy = NeuralNetwork.evaluate(self, X_test, y_test)
         
-        final_feedback = f'Test cost: {test_cost}\t\t\tTest accuracy: {round(test_accuracy, 4)}%\n' \
-            + f'Total training time: {format_time(total_training_time)}\n' \
-            + f'================================================='
+        final_feedback = f'Neural Network performance on test set:\n' \
+            f'Test cost: {test_cost}\t\t\tTest accuracy: {round(test_accuracy, 4)}%\n' \
+            f'Total training time: {format_time(total_training_time)}\n' \
+            f'================================================='
         print(final_feedback)
 
         # set useful data for storage purposes

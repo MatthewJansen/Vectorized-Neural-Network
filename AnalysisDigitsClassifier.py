@@ -3,7 +3,6 @@ Note to user:
 
 This script is used to analyse the performance of trained Neural Networks.
 Feel free to play with the script and to add-on anything else as you wish.
-I will add more related features at a later stage.
 """
 
 import numpy as np
@@ -119,19 +118,32 @@ def main():
     X_test, y_test = set_splits(test_set)
 
     # normalize input data
-    X_train = X_train / 255
-    X_valid = X_valid / 255
-    X_test = X_test / 255
+    X_train = DataPreProcessor.normalize_dataset(X_train)
+    X_valid = DataPreProcessor.normalize_dataset(X_valid)
+    X_test = DataPreProcessor.normalize_dataset(X_test)
 
     #load data into neural network data structure
     model_name = 'PreTrained_Models/model6'
     NN = NeuralNetworkConfig.load_network_config(model_name)
-    print(test_gradient(NN, X_train[0], y_train[0]))
+
+    # test gradient
+    # eps = 1e-10
+    # sample_count = 20
+    # average_error = 0
+    # print('-------------------------------------------------')
+    # print(f'Testing gradient with sample [epsilon = {eps}]:')
+    # for i in range(sample_count):
+    #     error_rate = 100 * test_gradient(NN, X_train[i], y_train[i], epsilon=eps)
+    #     average_error += error_rate / sample_count
+
+    # print(f'Average error rate in gradients computed: {round(average_error, 6)}%')
+    # print('-------------------------------------------------')
+    
     # plot cost data
     cost_hist = NN.cost_hist
     plot_cost_hist(cost_hist)
-    display_digits(NN, X_test, y_test, 20)
-    compare_digits_classified(NN, X_test, y_test)
+    # display_digits(NN, X_test, y_test, 20)
+    # compare_digits_classified(NN, X_test, y_test)
     
     return
 

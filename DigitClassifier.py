@@ -3,7 +3,6 @@ import numpy as np
 from NeuralNetwork import NeuralNetwork
 from NetworkConfigHandler import NeuralNetworkConfig
 from DataPreProcessor import DataPreProcessor
-import matplotlib.pyplot as plt
 
 
 def main():
@@ -14,16 +13,16 @@ def main():
     delimeter = ','
     labels = ['id'] + [f'pixel_{i}' for i in range(784)]
 
-    train_df = DataPreProcessor.load_data(mnist_train, delimeter, labels)
+    train_set = DataPreProcessor.load_data(mnist_train, delimeter, labels)
     test_set = DataPreProcessor.load_data(mnist_test, delimeter, labels)
     
     # decrease dataset size
-    train_df = train_df[0 : int(train_df.shape[0]*.1)][:]
-    test_set = test_set[0 : int(train_df.shape[0]*.1)][:]
+    train_set = train_set[0 : int(train_set.shape[0]*.1)][:]
+    test_set = test_set[0 : int(train_set.shape[0]*.1)][:]
 
-    # split training data into training & validation sets
-    split = 0.2
-    train_set, valid_set = DataPreProcessor.split_dataset(train_df, split)
+    # split test dataframe into test & validation sets
+    split = 0.5
+    test_set, valid_set = DataPreProcessor.split_dataset(test_set, split)
     
     # construct input output vector sets
     set_splits = lambda digit_set: (digit_set.iloc[:, 1:].to_numpy(), digit_set.iloc[:, 0].to_numpy())
@@ -38,16 +37,16 @@ def main():
 
     # initialise neural network parameters
     n = train_set.shape[1] - 1
-    layer_config = [n, 100, 10]
+    layer_config = [n, 240, 120, 10]
     alpha = 12
     activation_function = "leaky_ReLU"
-    const_c = 0.1
+    const_c = 0.4
     
     # construct neural network
     NN = NeuralNetwork(n, alpha, layer_dimensions=layer_config, activation_func=activation_function, c=const_c)
     
     #train neural network
-    epochs = 4
+    epochs = 10
     NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
     NN.evaluate(X_test, y_test)
     
