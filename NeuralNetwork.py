@@ -374,6 +374,26 @@ class NeuralNetwork():
 
         return
 
+    def get_predictions(self, X, y):
+        '''
+        Computes predictions vector consiting of all predictions for each sample in X and 
+        has the same shape as y.
+
+        @params
+        - X: (np.ndarray) -> input data from the dataset
+        - y: (np.ndarray) -> output data from the dataset
+
+        @returns
+        - y_pred: (np.ndarray) -> predictions for all samples in X with the same shape as y
+        '''
+
+        y_pred = np.zeros_like(y)
+
+        for i in range(X.shape[0]):
+            y_pred[i] = np.argmax(self.forward_propagate(X[i][:]))
+        
+        return y_pred
+
     def evaluate(self, X, y):
         '''
         Evaluates the accuracy of the Neural Network relative to the data

@@ -143,7 +143,7 @@ def main():
     cost_hist = NN.cost_hist
     plot_cost_hist(cost_hist)
     # display_digits(NN, X_test, y_test, 20)
-    # compare_digits_classified(NN, X_test, y_test)
+    compare_digits_classified(NN, X_test, y_test)
     
     return
 
