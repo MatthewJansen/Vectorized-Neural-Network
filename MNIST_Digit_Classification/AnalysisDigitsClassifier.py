@@ -4,13 +4,17 @@ Note to user:
 This script is used to analyse the performance of trained Neural Networks.
 Feel free to play with the script and to add-on anything else as you wish.
 """
+# add path to source code
+import sys
+sys.path.append('../src/')
 
+# import required modules
 import numpy as np
 from numpy import linalg as LA
 import matplotlib.pyplot as plt
 import pandas as pd
 from NeuralNetwork import NeuralNetwork
-from NetworkConfigHandler import NeuralNetworkConfig
+from NetworkConfigHandler import NetworkConfigHandler
 from DataPreProcessor import DataPreProcessor
 
 def plot_cost_hist(cost_history: dict) -> None:
@@ -93,8 +97,8 @@ def test_gradient(NN: NeuralNetwork, x, y, epsilon=1e-4):
 
 
 def main():
-    mnist_test = 'mnist_test.csv'
-    mnist_train = 'mnist_train.csv'
+    mnist_test = './data/mnist_test.csv'
+    mnist_train = './data/mnist_train.csv'
 
     # get datasets
     delimeter = ','
@@ -123,27 +127,14 @@ def main():
     X_test = DataPreProcessor.normalize_dataset(X_test)
 
     #load data into neural network data structure
-    model_name = 'PreTrained_Models/model6'
-    NN = NeuralNetworkConfig.load_network_config(model_name)
+    model_name = 'PreTrained_Models/model7'
+    NN = NetworkConfigHandler.load_network_config(model_name)
 
-    # test gradient
-    # eps = 1e-10
-    # sample_count = 20
-    # average_error = 0
-    # print('-------------------------------------------------')
-    # print(f'Testing gradient with sample [epsilon = {eps}]:')
-    # for i in range(sample_count):
-    #     error_rate = 100 * test_gradient(NN, X_train[i], y_train[i], epsilon=eps)
-    #     average_error += error_rate / sample_count
-
-    # print(f'Average error rate in gradients computed: {round(average_error, 6)}%')
-    # print('-------------------------------------------------')
-    
     # plot cost data
     cost_hist = NN.cost_hist
     plot_cost_hist(cost_hist)
-    # display_digits(NN, X_test, y_test, 20)
-    compare_digits_classified(NN, X_test, y_test)
+    display_digits(NN, X_test, y_test, 20)
+    #compare_digits_classified(NN, X_test, y_test)
     
     return
 

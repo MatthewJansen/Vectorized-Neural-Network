@@ -53,13 +53,15 @@ class NeuralNetwork():
         # set network weights
         # Note: if layer[i] has m neurons and layer[i + 1] has n neurons, then the matrix containing the values of
         #       the weights connecting layer[i, i + 1] has dimmension(n, m).
-        self.neuralnetwork['weights'] = {i: np.random.normal(0, 0.09, (layer_dimensions[i], layer_dimensions[i - 1]))
-                                         for i in range(1, len(layer_dimensions))}
+        self.neuralnetwork['weights'] = {
+            i:  np.random.normal(0, 0.09, (layer_dimensions[i], layer_dimensions[i - 1]))
+                for i in range(1, len(layer_dimensions))}
 
         # bias should be a column vector with the same amount of entries as nodes per layer
         # (dimmension(n, 1) where n is the number of neurons in a layer)
-        self.neuralnetwork['bias'] = {i: np.array([[-1 * np.random.random() for j in range(layer_dimensions[i])]]).T
-                                      for i in range(1, len(layer_dimensions))}
+        self.neuralnetwork['bias'] = {
+            i:  np.array([[-1 * np.random.random() for j in range(layer_dimensions[i])]]).T
+                for i in range(1, len(layer_dimensions))}
 
         # activation should be a column vector with the same amount of entries as nodes per layer
         # (dimmension(n, 1) where n is the number of neurons in a layer)
@@ -163,8 +165,7 @@ class NeuralNetwork():
 
         return output_layer
 
-    @staticmethod
-    def encode_output(y):
+    def encode_output(self, y):
         '''
         Encodes the expected output from the dataset into a sparse column vector
         containing the value 1 at the index assigned to the output.
@@ -178,7 +179,7 @@ class NeuralNetwork():
         ATTENTION - this function should be custom written to accommodate the 
         evaluation for the Neural Network output. 
         '''
-        encoded_y = np.zeros(((10, 1)))
+        encoded_y = np.zeros(((self.layer_dimensions[-1], 1)))
         encoded_y[int(y)] = 1
 
         return encoded_y
@@ -203,7 +204,7 @@ class NeuralNetwork():
         for i in range(n):
             # feed input data to the Network
             x_i = NeuralNetwork.reshape_vector(X[i])
-            y_i = NeuralNetwork.encode_output(y[i])
+            y_i = NeuralNetwork.encode_output(self, y[i])
             pred = NeuralNetwork.forward_propagate(self, x_i)
             # compute the cumulative cost
             cost_C += sum(NeuralNetwork.cost(pred, y_i))
@@ -427,7 +428,7 @@ class NeuralNetwork():
             negative += 1 if (evaluation == 0) else 0
 
         # compute total accuracy
-        accuracy = (positive / dataset_size) * 100
+        accuracy = (positive / dataset_size)
 
         return accuracy
 
@@ -504,7 +505,7 @@ class NeuralNetwork():
             # print epoch stats
             feedback = f"Epoch: [{epoch}]\t\tExecution time: [{format_time(epoch_time)}]\n\n" \
                 f'Train cost: {train_epoch_cost}\t\t\tValidation cost: {valid_epoch_cost}\n' \
-                f'Train accuracy: {round(train_accuracy, 4)}%\t\t\tValidation accuracy: {round(valid_accuracy, 4)}%\n' \
+                f'Train accuracy: {round(train_accuracy* 100, 4)}%\t\t\tValidation accuracy: {round(valid_accuracy* 100, 4)}%\n' \
                 '-------------------------------------------------'
             print(feedback)
 
@@ -522,7 +523,7 @@ class NeuralNetwork():
         test_accuracy = NeuralNetwork.evaluate(self, X_test, y_test)
         
         final_feedback = f'Neural Network performance on test set:\n' \
-            f'Test cost: {test_cost}\t\t\tTest accuracy: {round(test_accuracy, 4)}%\n' \
+            f'Test cost: {test_cost}\t\t\tTest accuracy: {round(test_accuracy * 100, 4)}%\n' \
             f'Total training time: {format_time(total_training_time)}\n' \
             f'================================================='
         print(final_feedback)

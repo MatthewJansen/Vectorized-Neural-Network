@@ -8,7 +8,7 @@ class DataPreProcessor:
         pass
 
     @staticmethod
-    def load_data(filename: str, delimeter: str, labels: list):
+    def load_data(filename: str, delimeter: str = ',', labels: list = []):
         '''
         Used to load the data from a .csv file into a pandas DataFrame.
 
@@ -88,37 +88,3 @@ class DataPreProcessor:
         # norm_set = temp_set[:].apply(scale_feature, axis=1)
         
         return norm_set
-
-    @staticmethod
-    def generate_minibatchs(dataset: pd.DataFrame, batch_size: int, shuffle: bool = False):
-        '''
-        Generates a set of mini-batches with requested batch size from a given dataset.
-
-        @params
-        - dataset: (pd.DataFrame) -> dataset from which mini-batches are generated
-        - batch_size: (int) -> number of samples each mini-batch should contain
-        - shuffle: (bool) -> conditional for shuffling samples of mini-batches
-
-        @returns
-        - mini_batches: (dict[int, DataFrame]) -> set of generated mini-batches
-        '''
-
-        try:
-            # check if requested batch size is smaller than number of samples 
-            if batch_size > dataset.shape[0]:
-                raise ValueError # batch size too large, raise error
-            
-            # split dataset into batches 
-            mini_batches = [(dataset[i: i + batch_size]).reset_index()
-                        for i in range(0, dataset.shape[0], batch_size)]
-
-            if shuffle:
-                mini_batches = {i: DataPreProcessor.shuffle_dataset(mini_batches[i]) for i in range(len(mini_batches))}    
-            else:
-                mini_batches = {i: mini_batches[i] for i in range(len(mini_batches))}
-            
-            return mini_batches
-        
-        except ValueError as e:
-            print(f"\nERROR:\tRequested batch size too large for this operation.\n\tNumber of samples in dataset: {dataset.shape[0]}\n\tbatch_size: {batch_size}\n")
-            

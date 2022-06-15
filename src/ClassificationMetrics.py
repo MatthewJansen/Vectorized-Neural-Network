@@ -12,6 +12,16 @@ class ClassificationMetrics:
 
     @staticmethod
     def confusion_matrix(y, y_pred):
+        '''
+        Generates a confusion matrix from the given target vector y and prediction vector y_pred.
+
+        @params
+        - y: (np.ndarray) -> vector containing target values for a given dataset
+        - y_pred: (np.ndarray) -> vector containing predictions made by a trined neural network
+
+        @returns
+        - conf_matrix: (pd.DataFrame) -> confusion matrix contained in a pandas dataframe with labled rows and columns
+        '''
         classes = np.unique(y)
         class_count = len(classes)
 
@@ -61,6 +71,10 @@ class ClassificationMetrics:
         print('=================================================\n')
         print('Classification Report:\n')
         print(f'Accuracy:\t{round(acc * 100, 2)}%\n')
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.colheader_justify', 'center')
+        pd.set_option('display.precision', 2)
         print(metrics.to_string())
         print('\n=================================================')
 
@@ -83,8 +97,8 @@ if __name__ == '__main__':
     test_set = DataPreProcessor.load_data(mnist_test, delimeter, labels)
     
     # decrease dataset size
-    train_df = train_df[0 : int(train_df.shape[0]*1)][:]
-    test_set = test_set[0 : int(train_df.shape[0]*1)][:]
+    train_df = train_df[0 : int(train_df.shape[0]*1.00)][:]
+    test_set = test_set[0 : int(train_df.shape[0]*1.00)][:]
 
     # split training data into training & validation sets
     split = 0.2
@@ -102,7 +116,7 @@ if __name__ == '__main__':
     X_test = DataPreProcessor.normalize_dataset(X_test)
 
     #load data into neural network data structure
-    model_name = 'PreTrained_Models/model1'
+    model_name = 'PreTrained_Models/model7'
     NN = NeuralNetworkConfig.load_network_config(model_name)
 
     # compute 

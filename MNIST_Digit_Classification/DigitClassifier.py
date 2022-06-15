@@ -1,13 +1,18 @@
+# add path to source code
+import sys
+sys.path.append('../src/')
+
+# import required modules
 import pandas as pd
 import numpy as np
 from NeuralNetwork import NeuralNetwork
-from NetworkConfigHandler import NeuralNetworkConfig
+from NetworkConfigHandler import NetworkConfigHandler
 from DataPreProcessor import DataPreProcessor
 
 
 def main():
-    mnist_test = 'mnist_test.csv'
-    mnist_train = 'mnist_train.csv'
+    mnist_test = './data/mnist_test.csv'
+    mnist_train = './data/mnist_train.csv'
 
     # get datasets
     delimeter = ','
@@ -37,23 +42,23 @@ def main():
 
     # initialise neural network parameters
     n = train_set.shape[1] - 1
-    layer_config = [n, 240, 120, 10]
-    alpha = 12
+    layer_config = [n, 128, 64, 10]
+    alpha = 20
     activation_function = "leaky_ReLU"
-    const_c = 0.4
+    const_c = 0.1
     
     # construct neural network
     NN = NeuralNetwork(n, alpha, layer_dimensions=layer_config, activation_func=activation_function, c=const_c)
     
     #train neural network
-    epochs = 10
+    epochs = 3
     NN.train(X_train, y_train, X_valid, y_valid, X_test, y_test, epochs)
     NN.evaluate(X_test, y_test)
     
     # store Neural Network data here
     # ATTENTION - take note of the store and load methods
-    model_name = 'PreTrained_Models/model6'
-    NeuralNetworkConfig.store_network_config(NN, model_name)
+    model_name = 'PreTrained_Models/model_test'
+    NetworkConfigHandler.store_network_config(NN, model_name)
     
     return
 
