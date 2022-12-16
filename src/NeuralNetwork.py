@@ -1,6 +1,8 @@
 import numpy as np
+from tqdm import tqdm
 import time
 from ActivationFunctions import ActivationFunctions
+from DataHandler import DataHandler
 
 class NeuralNetwork():
     '''
@@ -21,55 +23,85 @@ class NeuralNetwork():
         - learning_rate: (float) -> Rate at which the Neural Network should learn
         - activation_func: (str) -> Activation function to be used for the Neural Network
                 Available activation functions:
-                        - Sigmoid
+                        - sigmoid
                         - ReLU
                         - leaky_ReLU
+                        - tanh
         - layer_dimensions: (list) -> A list of integers representing the number of neurons each layer should contain
         - c: (float) -> constant used as a parameter to the ReLU and leaky_ReLU function
 
     '''
 
-    def __init__(self, feature_count, learning_rate, layer_dimensions=[1, 1], activation_func='Sigmoid', c=0):
+    def __init__(self, config: list, learning_rate):
 
         # check if layer_dimensions has at least 2 elements.
-        if(len(layer_dimensions) < 2):
-            raise(Exception)
+        # if(len(layer_dimensions) < 2):
+        #     raise(Exception)
 
-        self.feature_count = feature_count
+        self.config = config
+        self.feature_count = self.config[0]['units']
+        self.layer_dimensions = [self.config[_]['units'] for _ in range(len(self.config))]
+        self.layer_activations = {_: config[_]['activation'] for _ in range(len(config))}
         self.alpha = learning_rate
-        self.layer_dimensions = layer_dimensions
-        self.activation_func = activation_func
-        self.c = 0
 
-        if (activation_func == 'leaky_ReLU') and (c > 0):
-            self.c = c
-
-        self.activation, self.activation_deriv = ActivationFunctions.get_activation_pair(activation_func)
+        self.activation_functions = {
+            _: ActivationFunctions.get_activation_pair(config[_]['activation'])
+                for _ in range(len(self.config))
+        }
 
         self.neuralnetwork = {}
         self.neuralnetwork['z'] = {}
         self.neuralnetwork['deltas'] = {}
 
         # set network weights
-        # Note: if layer[i] has m neurons and layer[i + 1] has n neurons, then the matrix containing the values of
-        #       the weights connecting layer[i, i + 1] has dimmension(n, m).
-        self.neuralnetwork['weights'] = {
-            i:  np.random.normal(0, 0.09, (layer_dimensions[i], layer_dimensions[i - 1]))
-                for i in range(1, len(layer_dimensions))}
+        # Note: if layer[i] has m neurons and layer[i + 1] has n neurons, 
+        #       then the matrix containing the values of the weights 
+        #       connecting layer[i, i + 1] has dimension(n, m).
+        mu = 0
+        sigma = 1 / (self.layer_dimensions[0] ** 0.5)
+        self.generate_weights(mu, sigma)
 
-        # bias should be a column vector with the same amount of entries as nodes per layer
-        # (dimmension(n, 1) where n is the number of neurons in a layer)
-        self.neuralnetwork['bias'] = {
-            i:  np.array([[-1 * np.random.random() for j in range(layer_dimensions[i])]]).T
-                for i in range(1, len(layer_dimensions))}
-
-        # activation should be a column vector with the same amount of entries as nodes per layer
-        # (dimmension(n, 1) where n is the number of neurons in a layer)
-        self.neuralnetwork['activation'] = {i: np.array([[0 for j in range(layer_dimensions[i])]]).T
-                                            for i in range(len(layer_dimensions))}
+        # bias should be a column vector with the same amount of entries 
+        # as nodes per layer (dimension(n, 1) where n is the number of 
+        # neurons in a layer)
+        self.generate_bias() 
+        
+        # activation should be a column vector with the same amount of 
+        # entries as nodes per layer (dimension(n, 1) where n is the 
+        # number of neurons in a layer)
+        self.neuralnetwork['activation'] = {i: np.zeros((self.layer_dimensions[i], 1))
+                                            for i in range(len(self.layer_dimensions))}
 
         self.cost_hist = {}
         self.accuracies = {}
+
+
+    def __call__(self, x:np.ndarray):
+        return self.forward_propagate(x.reshape(-1, 1))
+
+    def generate_weights(self, mu, sigma):
+        network_weights = {}
+
+        for i in range(1, len(self.layer_dimensions)):
+            prev_layer = self.layer_dimensions[i - 1]
+            current_layer = self.layer_dimensions[i]
+            network_weights[i] = np.random.normal(mu, sigma, (current_layer, prev_layer))
+
+        self.neuralnetwork['weights'] = network_weights
+
+        return
+
+    def generate_bias(self):
+        network_bias = {}
+
+        for i in range(1, len(self.layer_dimensions)):
+            current_layer = self.layer_dimensions[i]
+            network_bias[i] = -1 * np.random.rand(current_layer, 1)
+            
+        self.neuralnetwork['bias'] = network_bias
+
+        return
+
 
     def get_cost_hist(self, setname):
         '''
@@ -117,7 +149,9 @@ class NeuralNetwork():
         '''
         return x.reshape((np.shape(x)[0], 1))
 
-##################Forward-propagation and Backpropagation############################
+############################
+# Forward-propagation and Backpropagation
+############################
 
     def forward_propagate(self, input_layer):
         '''
@@ -133,29 +167,30 @@ class NeuralNetwork():
         b = self.neuralnetwork['bias']
         A = self.neuralnetwork['activation']
         z = self.neuralnetwork['z']
-        A[0] = NeuralNetwork.reshape_vector(input_layer)
+        A[0] = input_layer
 
         layers = list(W.keys())
-        final_layer = layers[-1]
+        # final_layer = layers[-1]
         next_layer = 0
 
         # Perform feed-forward up to the output layer
-        for i in layers[:-1]:
+        for i in layers:
             z[i] = NeuralNetwork.compute_activation(W[i], A[i - 1], b[i])
-
-            if (self.activation_func == 'leaky_ReLU'):
-                next_layer = self.activation(self.c, z[i])
-            else:
-                next_layer = self.activation(z[i])
+            layer_activation = self.activation_functions[i][0]
+            next_layer = layer_activation(z[i])
+            # if (self.activation_func == 'leaky_ReLU'):
+            #     next_layer = self.activation(self.c, z[i])
+            # else:
+            #     next_layer = self.activation(z[i])
 
             A[i] = next_layer
 
-        # Activate the output layer with sigmoid
-        z[final_layer] = NeuralNetwork.compute_activation(
-            W[final_layer], A[final_layer - 1], b[final_layer])
-        # ATTENTION - this can be changed to evaluate with other evaluation functions
-        next_layer = ActivationFunctions.sigmoid(z[final_layer])
-        A[final_layer] = next_layer
+        # # Activate the output layer with sigmoid
+        # z[final_layer] = NeuralNetwork.compute_activation(
+        #     W[final_layer], A[final_layer - 1], b[final_layer])
+        # # ATTENTION - this can be changed to evaluate with other evaluation functions
+        # next_layer = self.activation_deriv(self.c, z[final_layer])
+        # A[final_layer] = next_layer
 
         # store activations of the network
         self.neuralnetwork['activation'] = A
@@ -165,24 +200,6 @@ class NeuralNetwork():
 
         return output_layer
 
-    def encode_output(self, y):
-        '''
-        Encodes the expected output from the dataset into a sparse column vector
-        containing the value 1 at the index assigned to the output.
-
-        @param
-        - y: (Any) -> expected output from dataset 
-
-        @returns
-        - encoded_y: (np.ndarray) -> encoded version of the expected output y
-
-        ATTENTION - this function should be custom written to accommodate the 
-        evaluation for the Neural Network output. 
-        '''
-        encoded_y = np.zeros(((self.layer_dimensions[-1], 1)))
-        encoded_y[int(y)] = 1
-
-        return encoded_y
 
     def total_cost(self, X: np.ndarray, y: np.ndarray):
         '''
@@ -198,16 +215,16 @@ class NeuralNetwork():
         '''
         # initialise useful variables
         cost_C = 0
-        n = X.shape[0]
+        n = len(X)
 
         # compute cost for each input
         for i in range(n):
             # feed input data to the Network
-            x_i = NeuralNetwork.reshape_vector(X[i])
-            y_i = NeuralNetwork.encode_output(self, y[i])
-            pred = NeuralNetwork.forward_propagate(self, x_i)
+            x = X[i].reshape(-1, 1)
+            pred = NeuralNetwork.forward_propagate(self, x)
+
             # compute the cumulative cost
-            cost_C += sum(NeuralNetwork.cost(pred, y_i))
+            cost_C += sum(NeuralNetwork.cost(pred, y[i].reshape(-1, 1)))
 
         # return average cost
         return (1 / n) * cost_C
@@ -228,7 +245,7 @@ class NeuralNetwork():
         # return vector containing the cost for each neuron in the output layer
         return 0.5 * np.square(y - output)
 
-    def cost_gradient(self, output, y):
+    def cost_gradient(self, y_true, y_pred, activation_deriv):
         '''
         Used to compute the gradient of the neural network output. 
 
@@ -239,19 +256,20 @@ class NeuralNetwork():
         @returns
         - grad_C: (np.ndarray) -> gradient vector 
         '''
-        grad_C = 0
+        cost_deriv = (1 / self.feature_count) * (y_true - y_pred)
 
         # compute gradient for the output of the Neural Network relative to the activation function
-        if (self.activation_func == 'leaky_ReLU'):
-            grad_C = (1 / self.feature_count) * (y - output) * \
-                self.activation_deriv(self.c, output)
-        if (self.activation_func != 'leaky_ReLU'):
-            grad_C = (1 / self.feature_count) * (y - output) * \
-                self.activation_deriv(output)
+        grad_C = cost_deriv * activation_deriv(y_pred)
+
+        # if (self.activation_func == 'leaky_ReLU'):
+        #     grad_C = cost_deriv * self.activation_deriv(self.c, y_pred)
+        
+        # if (self.activation_func != 'leaky_ReLU'):
+        #     grad_C = cost_deriv * (y_true - y_pred) * self.activation_deriv(y_pred)
 
         return grad_C
 
-    def hidden_layer_cost(self, delta, weights, z):
+    def hidden_layer_cost(self, delta, weights, z, activation_deriv):
         '''
         Computes the cost of the output relative to the hidden layers
         within the neural network (i.e. the deltas for the hidden layers).
@@ -269,20 +287,18 @@ class NeuralNetwork():
         delta_W = np.dot(weights.T, delta)
 
         # compute delta (hidden layer cost) relative to the activation function used
-        if (self.activation_func == 'leaky_ReLU'):
-            return delta_W * self.activation_deriv(self.c, z)
+        # if (self.activation_func == 'leaky_ReLU'):
+        #     return delta_W * self.activation_deriv(self.c, z)
 
-        return delta_W * self.activation_deriv(z)
+        return delta_W * activation_deriv(z) #self.activation_deriv(z)
 
-    def back_propagate_error(self, y):
+    def back_propagate_error(self, y_true):
         '''
         Backpropagate the error/cost of the output layer to the input layer
         (computes all the deltas for all layers within the neural network)
 
         @params
-        - y: (np.ndarray) -> expected output for the neural network input
-
-        ATTENTION - y is encoded here to match the dimmensions of the output layer
+        - y_true: (np.ndarray) -> expected output for the neural network input
 
         @returns
         - None
@@ -292,14 +308,17 @@ class NeuralNetwork():
         W = self.neuralnetwork['weights']
         A = self.neuralnetwork['activation']
         z = self.neuralnetwork['z']
-        y_encoded = self.encode_output(y)  # ATTENTION!
         deltas = {}
 
         # Compute delta for the output layer
-        output = A[max(A.keys())]
-        output_error_grad = NeuralNetwork.cost_gradient(
-            self, output, y_encoded)
-        deltas[max(A.keys())] = output_error_grad
+        output_layer_idx = max(A.keys())
+        y_pred = A[output_layer_idx]
+        output_error_grad = self.cost_gradient(
+            y_true.reshape(-1, 1), 
+            y_pred, 
+            self.activation_functions[output_layer_idx][1] # final layer derivative
+        )
+        deltas[output_layer_idx] = output_error_grad
 
         # Construct a list containing layer numbers to be traversed
         layers = list(A.keys())[2:]
@@ -308,7 +327,10 @@ class NeuralNetwork():
         # the second last layer and compute hidden deltas
         for layer in reversed(layers):
             deltas[layer - 1] = NeuralNetwork.hidden_layer_cost(
-                self, deltas[layer], W[layer], z[layer - 1])
+                self, deltas[layer], 
+                W[layer], z[layer - 1], 
+                self.activation_functions[layer][1]
+            )
 
         # Add deltas to the network structure
         self.neuralnetwork['deltas'] = deltas
@@ -344,25 +366,26 @@ class NeuralNetwork():
 
         z[0] = A[0]
         deltas = self.neuralnetwork['deltas']
+        N_inv = (1 / self.feature_count)
 
         final_layer = max(A.keys())
         dw[final_layer] = np.dot(deltas[final_layer], A[final_layer - 1].T)
         # np.sum(deltas[final_layer], axis=1, keepdims=True)
-        db[final_layer] = (1 / self.feature_count) * deltas[final_layer]
+        db[final_layer] = N_inv * deltas[final_layer]
 
         # compute differentials for weights and biases of each layer in the network
         # starting at the output layer
         for layer in reversed(list(W.keys())[1:]):
             # Compute derivative of activation function
-            func_deriv = 0
-            if (self.activation_func == 'leaky_ReLU'):
-                func_deriv = self.activation_deriv(self.c, z[layer - 1])
-            if (self.activation_func != 'leaky_ReLU'):
-                func_deriv = self.activation_deriv(z[layer - 1])
+            func_deriv = self.activation_functions[layer][1](z[layer - 1])
+            
+            # if (self.activation_func == 'leaky_ReLU'):
+            #     func_deriv = self.activation_deriv(self.c, z[layer - 1])
+            # if (self.activation_func != 'leaky_ReLU'):
+            #     func_deriv = self.activation_deriv(z[layer - 1])
 
-            dw[layer - 1] = (1 / self.feature_count) * \
-                np.dot(W[layer].T, deltas[layer]) * func_deriv
-            db[layer - 1] = (1 / self.feature_count) * deltas[layer - 1]
+            dw[layer - 1] = N_inv * np.dot(W[layer].T, deltas[layer]) * func_deriv
+            db[layer - 1] = N_inv * deltas[layer - 1]
 
         # compute new weights and biases
         for i in W.keys():
@@ -375,9 +398,9 @@ class NeuralNetwork():
 
         return
 
-    def get_predictions(self, X, y):
+    def get_predictions(self, ds: DataHandler):
         '''
-        Computes predictions vector consiting of all predictions for each sample in X and 
+        Computes predictions vector consisting of all predictions for each sample in X and 
         has the same shape as y.
 
         @params
@@ -388,14 +411,15 @@ class NeuralNetwork():
         - y_pred: (np.ndarray) -> predictions for all samples in X with the same shape as y
         '''
 
-        y_pred = np.zeros_like(y)
+        y_pred = np.zeros_like(ds.y)
 
-        for i in range(X.shape[0]):
-            y_pred[i] = np.argmax(self.forward_propagate(X[i][:]))
+        for i in range(len(ds)):
+            x, target = ds[i]
+            y_pred[i] = np.argmax(self.forward_propagate(x.reshape(-1, 1)))
         
         return y_pred
 
-    def evaluate(self, X, y):
+    def evaluate(self, ds: DataHandler):
         '''
         Evaluates the accuracy of the Neural Network relative to the data
         provided.
@@ -408,31 +432,30 @@ class NeuralNetwork():
         - accuracy: (float) -> accuracy of the neural network relative to the provided data
         '''
         # get dataset size
-        dataset_size = np.size(X, 0)
-
+        ds_size = len(ds)
+        ds_size_inv = 1 / ds_size
+        
         # initialise variables used to track no. of entries classified correctly
-        positive = 0
-        negative = 0
+        accuracy = 0
+        cost = 0
 
         # compute accuracies for each entry
-        for i in range(dataset_size):
+        for i in range(ds_size):
+            x, target = ds[i]
+
             # forward-propagate input
-            x = X[i][:]
-            prediction = NeuralNetwork.forward_propagate(self, x)
+            x = x.reshape(-1, 1)
+            pred = NeuralNetwork.forward_propagate(self, x)
 
-            # compare network output to expected output
-            evaluation = 1 if (y[i] == np.argmax(prediction)) else 0
+            # compare network output to expected output and track accuracy
+            comparison = 1 if (np.argmax(target.reshape(-1, 1)) == np.argmax(pred)) else 0
+            
+            accuracy += ds_size_inv * (comparison)
+            cost += ds_size_inv * np.sum(NeuralNetwork.cost(pred, target))
 
-            # track comparison
-            positive += 1 if (evaluation == 1) else 0
-            negative += 1 if (evaluation == 0) else 0
+        return cost, accuracy
 
-        # compute total accuracy
-        accuracy = (positive / dataset_size)
-
-        return accuracy
-
-    def train(self, X_train, y_train, X_valid, y_valid, X_test, y_test, epochs):
+    def fit(self, train_ds, val_ds, epochs):
         '''
         Train the Neural Network for a number of epochs given data from 
         the training dataset, validation dataset and testing dataset.
@@ -449,12 +472,14 @@ class NeuralNetwork():
         @returns
         - None
         '''
-        initial_feedback = f'Data pre-processing complete, training initiated...\n' \
+        initial_feedback = f'Data received -> Training initiated...\n' \
             + f'================================================='
         print(initial_feedback)
-        # initialise useful variables
+
+        # initialise variables
         epoch = 1
-        train_size = np.size(X_train, 0)
+        train_size = len(train_ds)
+        train_size_inv = 1 / train_size
 
         Train_accuracies = []
         Valid_accuracies = []
@@ -464,50 +489,67 @@ class NeuralNetwork():
 
         total_training_time = 0
 
-        def format_time(time):
-                s, ms = divmod(time, 1)
-                m, s = divmod(s / 60, 1)
-                s = round(s * 60)
-                h, m = divmod(m / 60, 1)
-                m = round(m * 60)
+        compare = lambda pred, truth: 1 if (np.argmax(truth) == np.argmax(pred)) else 0
 
-                return f'{int(h)}h {int(m)}m {int(s)}.{str(round(ms, 4))[2:]}s'
+        # def format_time(time):
+        #         s, ms = divmod(time, 1)
+        #         m, s = divmod(s / 60, 1)
+        #         s = round(s * 60)
+        #         h, m = divmod(m / 60, 1)
+        #         m = round(m * 60)
+
+        #         return f'{int(h)}h {int(m)}m {int(s)}.{str(round(ms, 4))[2:]}s'
 
         # train neural network
-        while (epoch <= epochs):
+        for epoch in range(epochs):
+            print(f'Epoch {epoch + 1}/{epochs}')
+
+            train_accuracy = 0
+            train_epoch_cost = 0
+
             # record training time
             epoch_start = time.time()
 
             # loop through
-            for i in range(train_size):
+            for i in tqdm(range(train_size)):
+
+                inputs, target = train_ds[i]
                 # reshape input vector
-                x = NeuralNetwork.reshape_vector(X_train[i][:])
+                x = NeuralNetwork.reshape_vector(inputs)
 
                 # feed input, train & update neural network
-                NeuralNetwork.forward_propagate(self, x)
-                NeuralNetwork.back_propagate_error(self, y_train[i])
+                pred = NeuralNetwork.forward_propagate(self, x)
+                
+                # log cost and accuracy
+                train_accuracy += train_size_inv * (compare(pred, target))
+                train_epoch_cost += train_size_inv * np.sum(NeuralNetwork.cost(pred, target))
+                
+                # backpropagate and update
+                NeuralNetwork.back_propagate_error(self, target)
                 NeuralNetwork.update_network(self)
+
+
 
             # compute epoch execution time and update total training time record
             epoch_time = time.time() - epoch_start
             total_training_time += epoch_time
 
             # compute training & valdation accuracy
-            train_accuracy = NeuralNetwork.evaluate(self, X_train, y_train)
-            valid_accuracy = NeuralNetwork.evaluate(self, X_valid, y_valid)
+            valid_epoch_cost, valid_accuracy = NeuralNetwork.evaluate(self, val_ds)
 
             # compute training and test loss
-            train_epoch_cost = float(
-                NeuralNetwork.total_cost(self, X_train, y_train))
-            valid_epoch_cost = float(
-                NeuralNetwork.total_cost(self, X_valid, y_valid))
+            # valid_epoch_cost = float(
+            #     NeuralNetwork.total_cost(self, val_ds.X, val_ds.y))
 
             # print epoch stats
-            feedback = f"Epoch: [{epoch}]\t\tExecution time: [{format_time(epoch_time)}]\n\n" \
-                f'Train cost: {train_epoch_cost}\t\t\tValidation cost: {valid_epoch_cost}\n' \
-                f'Train accuracy: {round(train_accuracy* 100, 4)}%\t\t\tValidation accuracy: {round(valid_accuracy* 100, 4)}%\n' \
-                '-------------------------------------------------'
-            print(feedback)
+            # feedback = f"Epoch: [{epoch}]\t\tExecution time: [{format_time(epoch_time)}]\n\n" \
+            #     f'Train cost: {train_epoch_cost}\t\t\tValidation cost: {valid_epoch_cost}\n' \
+            #     f'Train accuracy: {round(train_accuracy* 100, 4)}%\t\t\tValidation accuracy: {round(valid_accuracy* 100, 4)}%\n' \
+            #     '-------------------------------------------------'
+
+            print(f'cost: {round(train_epoch_cost, 6)}\t\t\tval_cost: {round(valid_epoch_cost, 6)}')
+            print(f'accuracy: {round(train_accuracy, 6)}\t\tval_accuracy: {round(valid_accuracy, 6)}' )
+            print('-------------------------------------------------')
 
             # store useful data in lists
             Train_accuracies.append(train_accuracy)
@@ -516,17 +558,17 @@ class NeuralNetwork():
             train_cost_hist.append(train_epoch_cost)
             valid_cost_hist.append(valid_epoch_cost)
 
-            # update epoch
-            epoch += 1
+            # # update epoch
+            # epoch += 1
 
-        test_cost = NeuralNetwork.total_cost(self, X_test, y_test)
-        test_accuracy = NeuralNetwork.evaluate(self, X_test, y_test)
+        # test_cost = NeuralNetwork.total_cost(self, train_ds.X, train_ds.y)
+        # test_accuracy = NeuralNetwork.evaluate(self, val_ds.X, val_ds.y)
         
-        final_feedback = f'Neural Network performance on test set:\n' \
-            f'Test cost: {test_cost}\t\t\tTest accuracy: {round(test_accuracy * 100, 4)}%\n' \
-            f'Total training time: {format_time(total_training_time)}\n' \
-            f'================================================='
-        print(final_feedback)
+        # final_feedback = f'Neural Network performance on test set:\n' \
+        #     f'Test cost: {test_cost}\t\t\tTest accuracy: {round(test_accuracy * 100, 4)}%\n' \
+        #     f'Total training time: {format_time(total_training_time)}\n' \
+        #     f'================================================='
+        # print(final_feedback)
 
         # set useful data for storage purposes
         self.accuracies['Train_set'] = Train_accuracies

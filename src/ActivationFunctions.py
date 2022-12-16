@@ -10,6 +10,7 @@ class ActivationFunctions:
 
     Available activation functions:
         - sigmoid
+        - softmax
         - tanh
         - ReLU 
         - leaky_ReLU 
@@ -35,13 +36,13 @@ class ActivationFunctions:
         func_set = {
             'sigmoid': [ActivationFunctions.sigmoid, ActivationFunctions.sigmoid_deriv],
             'tanh': [ActivationFunctions.tanh, ActivationFunctions.tanh_deriv],
-            'ReLU': [ActivationFunctions.ReLU, ActivationFunctions.ReLU_deriv],
-            'leaky_ReLU': [ActivationFunctions.leaky_ReLU, ActivationFunctions.leaky_ReLU_deriv]
+            'relu': [ActivationFunctions.relu, ActivationFunctions.relu_deriv],
+            'leaky_relu': [ActivationFunctions.leaky_relu, ActivationFunctions.leaky_relu_deriv]
         }
 
         # check if the functions requested are defined and return if true
         if (activation_name not in func_set.keys()):
-            raise(ValueError(
+            raise (ValueError(
                 f"Activation function named \"{activation_name}\" is not defined. Check the spelling of activation_name or if the desired function is listed."))
 
         return func_set[activation_name][0], func_set[activation_name][1]
@@ -76,7 +77,17 @@ class ActivationFunctions:
         return (sig * (1 - sig))
 
     @staticmethod
-    def ReLU(z):
+    def softmax(z):
+        exp_z = np.exp(z - np.max(z))  # stable version
+        return exp_z / exp_z.sum()
+
+    @staticmethod
+    def softmax_deriv(z):
+        z_ = z.reshape(-1, 1)
+        return np.diagflat(z_) - np.dot(z_, z_.T)
+
+    @staticmethod
+    def relu(z):
         '''
         Computes the ReLU function for a given input z.
 
@@ -90,7 +101,7 @@ class ActivationFunctions:
         return np.where(z > 0, z, 0)
 
     @staticmethod
-    def ReLU_deriv(z):
+    def relu_deriv(z):
         '''
         Computes the derivative of the ReLU function for a given input z.
 
@@ -104,13 +115,13 @@ class ActivationFunctions:
         return np.where(z > 0, 1, 0)
 
     @staticmethod
-    def leaky_ReLU(c, z):
+    def leaky_relu(z, c=0.1):
         '''
         Computes the leaky ReLU function for a given input z.
 
         @params
-        - c: (float) -> constant value 
         - z: (np.ndarray) -> input object (expected to be of type np.ndarray)
+        - c: (float) -> constant value 
 
         @returns
         - (np.ndarray) -> function evaluated vector or object
@@ -119,7 +130,7 @@ class ActivationFunctions:
         return np.where(z > 0, z, c * z)
 
     @staticmethod
-    def leaky_ReLU_deriv(c, z):
+    def leaky_relu_deriv(z, c=0.1):
         '''
         Computes the derivative of the leaky ReLU function for a given input z.
 

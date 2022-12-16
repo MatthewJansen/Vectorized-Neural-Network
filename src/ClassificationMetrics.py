@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sn
-from DataPreProcessor import DataPreProcessor
+from PreProcessor import DataPreProcessor
 from NetworkConfigHandler import NeuralNetworkConfig
 
 
