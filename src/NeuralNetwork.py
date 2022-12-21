@@ -46,7 +46,7 @@ class NeuralNetwork():
 
         self.activation_functions = {
             _: ActivationFunctions.get_activation_pair(config[_]['activation'])
-                for _ in range(len(self.config))
+                for _ in range(1, len(self.config))
         }
 
         self.neuralnetwork = {}
@@ -58,7 +58,7 @@ class NeuralNetwork():
         #       then the matrix containing the values of the weights 
         #       connecting layer[i, i + 1] has dimension(n, m).
         mu = 0
-        sigma = 1 / (self.layer_dimensions[0] ** 0.5)
+        sigma = 0.9#1 / (self.layer_dimensions[0] ** 0.5)
         self.generate_weights(mu, sigma)
 
         # bias should be a column vector with the same amount of entries 
@@ -292,7 +292,7 @@ class NeuralNetwork():
 
         return delta_W * activation_deriv(z) #self.activation_deriv(z)
 
-    def back_propagate_error(self, y_true):
+    def back_propagate(self, y_true):
         '''
         Backpropagate the error/cost of the output layer to the input layer
         (computes all the deltas for all layers within the neural network)
@@ -337,7 +337,7 @@ class NeuralNetwork():
 
         return
 
-    def update_network(self):
+    def update(self):
         '''
         Updates the weights and biases of the Neural Network using the deltas 
         computed during Backpropagation.
@@ -398,7 +398,7 @@ class NeuralNetwork():
 
         return
 
-    def get_predictions(self, ds: DataHandler):
+    def predict(self, ds: DataHandler):
         '''
         Computes predictions vector consisting of all predictions for each sample in X and 
         has the same shape as y.
@@ -411,13 +411,13 @@ class NeuralNetwork():
         - y_pred: (np.ndarray) -> predictions for all samples in X with the same shape as y
         '''
 
-        y_pred = np.zeros_like(ds.y)
+        y_pred = []
 
         for i in range(len(ds)):
             x, target = ds[i]
-            y_pred[i] = np.argmax(self.forward_propagate(x.reshape(-1, 1)))
+            y_pred.append(self.forward_propagate(x.reshape(-1, 1)))
         
-        return y_pred
+        return np.stack(y_pred, axis=0)
 
     def evaluate(self, ds: DataHandler):
         '''
@@ -439,19 +439,31 @@ class NeuralNetwork():
         accuracy = 0
         cost = 0
 
-        # compute accuracies for each entry
-        for i in range(ds_size):
-            x, target = ds[i]
+        # generate predictions 
+        predictions = self.predict(ds)
 
-            # forward-propagate input
-            x = x.reshape(-1, 1)
-            pred = NeuralNetwork.forward_propagate(self, x)
+        # compute accuracy score
+        true_labels = np.argmax(np.expand_dims(ds.y, axis=1), axis=-1)
+        pred_labels = np.argmax(predictions, axis=1)
+        accuracy = np.mean(true_labels == pred_labels)
 
-            # compare network output to expected output and track accuracy
-            comparison = 1 if (np.argmax(target.reshape(-1, 1)) == np.argmax(pred)) else 0
-            
-            accuracy += ds_size_inv * (comparison)
-            cost += ds_size_inv * np.sum(NeuralNetwork.cost(pred, target))
+        cost = (1 / ds_size) * np.sum(self.cost(
+            predictions,  
+            np.expand_dims(ds.y, axis=1))
+        )
+
+        # # compute accuracies for each entry
+        # for i in range(ds_size):
+        #     x, target = ds[i]
+
+        #     # forward-propagate input
+        #     x = x.reshape(-1, 1)
+        #     pred = NeuralNetwork.forward_propagate(self, x)
+
+        #     # compare network output to expected output and track accuracy
+        #     if int(np.argmax(target) == np.argmax(pred)) == 1:
+        #         accuracy += 1
+        #     cost += np.sum(self.cost(pred, target))
 
         return cost, accuracy
 
@@ -489,7 +501,7 @@ class NeuralNetwork():
 
         total_training_time = 0
 
-        compare = lambda pred, truth: 1 if (np.argmax(truth) == np.argmax(pred)) else 0
+        compare = lambda pred, truth: int(np.argmax(truth) == np.argmax(pred))
 
         # def format_time(time):
         #         s, ms = divmod(time, 1)
@@ -508,7 +520,7 @@ class NeuralNetwork():
             train_epoch_cost = 0
 
             # record training time
-            epoch_start = time.time()
+            # epoch_start = time.time()
 
             # loop through
             for i in tqdm(range(train_size)):
@@ -525,14 +537,15 @@ class NeuralNetwork():
                 train_epoch_cost += train_size_inv * np.sum(NeuralNetwork.cost(pred, target))
                 
                 # backpropagate and update
-                NeuralNetwork.back_propagate_error(self, target)
-                NeuralNetwork.update_network(self)
+                NeuralNetwork.back_propagate(self, target)
+                NeuralNetwork.update(self)
 
-
+            # plot training metrics
+            print(f'cost: {round(train_epoch_cost, 6)}\t\t\taccuracy: {round(train_accuracy, 6)}')
 
             # compute epoch execution time and update total training time record
-            epoch_time = time.time() - epoch_start
-            total_training_time += epoch_time
+            # epoch_time = time.time() - epoch_start
+            # total_training_time += epoch_time
 
             # compute training & valdation accuracy
             valid_epoch_cost, valid_accuracy = NeuralNetwork.evaluate(self, val_ds)
@@ -547,11 +560,11 @@ class NeuralNetwork():
             #     f'Train accuracy: {round(train_accuracy* 100, 4)}%\t\t\tValidation accuracy: {round(valid_accuracy* 100, 4)}%\n' \
             #     '-------------------------------------------------'
 
-            print(f'cost: {round(train_epoch_cost, 6)}\t\t\tval_cost: {round(valid_epoch_cost, 6)}')
-            print(f'accuracy: {round(train_accuracy, 6)}\t\tval_accuracy: {round(valid_accuracy, 6)}' )
+            # plot validation metrics
+            print(f'val_cost: {round(valid_epoch_cost, 6)}\t\tval_accuracy: {round(valid_accuracy, 6)}' )
             print('-------------------------------------------------')
 
-            # store useful data in lists
+            # record metrics
             Train_accuracies.append(train_accuracy)
             Valid_accuracies.append(valid_accuracy)
 

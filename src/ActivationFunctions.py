@@ -35,6 +35,7 @@ class ActivationFunctions:
         # construct dict covering all the available pair functions (f and f')
         func_set = {
             'sigmoid': [ActivationFunctions.sigmoid, ActivationFunctions.sigmoid_deriv],
+            'softmax': [ActivationFunctions.softmax, ActivationFunctions.softmax_deriv],
             'tanh': [ActivationFunctions.tanh, ActivationFunctions.tanh_deriv],
             'relu': [ActivationFunctions.relu, ActivationFunctions.relu_deriv],
             'leaky_relu': [ActivationFunctions.leaky_relu, ActivationFunctions.leaky_relu_deriv]
