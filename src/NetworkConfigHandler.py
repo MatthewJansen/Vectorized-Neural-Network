@@ -31,8 +31,16 @@ class NetworkConfigHandler:
         #copy neural network structure data 
         network_struct = network_vars['neuralnetwork']
 
-        #delete non Json serializable variables
-        [network_vars.pop(k) for k in ['activation', 'activation_deriv', 'neuralnetwork']]
+        # copy neural network config and learning rate
+        network_data = {
+            'config': network_vars['config'],
+            'alpha': network_vars['alpha'],
+            'cost_hist': network_vars['cost_hist'],
+            'accuracies': network_vars['accuracies']
+        }
+        
+        #delete non json serializable variables
+        #[network_vars.pop(k) for k in ['activation_functions', 'neuralnetwork']]
 
         print(f'Saving data...')
         #save neural network structure data
@@ -40,9 +48,9 @@ class NetworkConfigHandler:
 
         #dump remaining neural network variables into json file
         with open(f'{model_name}_params.json', 'w') as file:
-            json.dump(network_vars, file)
+            json.dump(network_data, file)# json.dump(network_vars, file)
         print('Neural Network data stored successfully!')
-        return 
+        return
 
     @staticmethod
     def load_network_config(model_name:str) -> NeuralNetwork:
@@ -66,17 +74,18 @@ class NetworkConfigHandler:
         neural_network_struct = np.load(f'{model_name}_data.npy', allow_pickle=True)
         
         # assign Neural Network variables 
-        feature_count = network_parameters['feature_count'] 
+        cfg = network_parameters['config']
+        # feature_count = network_parameters['feature_count'] 
         alpha = network_parameters['alpha']
-        layer_dimensions = network_parameters['layer_dimensions'] 
-        activation_func = network_parameters['activation_func']
-        c = network_parameters['c']
+        # layer_dimensions = network_parameters['layer_dimensions'] 
+        # activation_func = network_parameters['activation_func']
+        # c = network_parameters['c']
         cost_hist = network_parameters['cost_hist']
         accuracies = network_parameters['accuracies']
 
         print('Re-constructing Neural Network with loaded data...')
         #create NeuralNetwork object
-        NN = NeuralNetwork(feature_count, alpha, layer_dimensions=layer_dimensions, activation_func=activation_func, c=c)
+        NN = NeuralNetwork(cfg, alpha)
         NN.neuralnetwork = neural_network_struct.item()
         NN.cost_hist = cost_hist
         NN.accuracies = accuracies
