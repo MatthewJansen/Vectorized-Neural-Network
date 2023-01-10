@@ -77,6 +77,9 @@ class ActivationFunctions:
         sig = ActivationFunctions.sigmoid(z)
         return (sig * (1 - sig))
 
+#=============================================#
+#       DO NOT USE THESE FUNCTIONS!!!!        #
+#=============================================#
     @staticmethod
     def softmax(z):
         exp_z = np.exp(z - np.max(z))  # stable version
@@ -86,6 +89,8 @@ class ActivationFunctions:
     def softmax_deriv(z):
         z_ = z.reshape(-1, 1)
         return np.diagflat(z_) - np.dot(z_, z_.T)
+
+#=============================================#
 
     @staticmethod
     def relu(z):
