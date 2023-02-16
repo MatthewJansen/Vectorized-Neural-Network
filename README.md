@@ -1,4 +1,18 @@
 # Vectorized Neural Network
+<div style='padding-bottom:10px;'>
+  <div style='float:left;'>
+    <img src='https://img.shields.io/badge/Maintained%3F-Yes-brightgreen.svg' style='margin-right:10px;'>
+    <img src='https://img.shields.io/badge/Made with-Python-blue' style='margin-right:10px;'>
+    <img src='https://img.shields.io/badge/LICENSE-MIT-green' style='margin-right:10px'>
+  </div>
+
+  <div style='float:right;'>
+    <img src='https://img.shields.io/github/stars/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
+    <img src='https://img.shields.io/github/forks/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
+    <img src='https://img.shields.io/github/watchers/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
+    <img src='https://img.shields.io/twitter/follow/matthewjansen_?style=social' style='margin-right:10px;'>
+  </div>
+</div>
 
 <center>
   <img src='https://i.postimg.cc/W1wr7ctR/Neural-Net.png' alt='NeuralNetwork'>
