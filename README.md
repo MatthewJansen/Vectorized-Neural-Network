@@ -1,18 +1,16 @@
 # Vectorized Neural Network
-<div style='padding-bottom:10px;'>
-  <div style='float:left;'>
-    <img src='https://img.shields.io/badge/Maintained%3F-Yes-brightgreen.svg' style='margin-right:10px;'>
-    <img src='https://img.shields.io/badge/Made with-Python-blue' style='margin-right:10px;'>
-    <img src='https://img.shields.io/badge/LICENSE-MIT-green' style='margin-right:10px'>
-  </div>
 
-  <div style='float:right;'>
-    <img src='https://img.shields.io/github/stars/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
-    <img src='https://img.shields.io/github/forks/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
-    <img src='https://img.shields.io/github/watchers/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
-    <img src='https://img.shields.io/twitter/follow/matthewjansen_?style=social' style='margin-right:10px;'>
-  </div>
+<div style='float:left;'>
+  <img href='' src='https://img.shields.io/badge/Maintained%3F-Yes-brightgreen.svg' style='margin-right:10px;'>
+  <img href='https://www.python.org/' src='https://img.shields.io/badge/Made with-Python-blue' style='margin-right:10px;'>
+  <img href='https://choosealicense.com/licenses/mit/' src='https://img.shields.io/badge/LICENSE-MIT-green' style='margin-right:10px'>
+  <img href='https://github.com/MatthewJansen/Vectorized-Neural-Network' src='https://img.shields.io/github/stars/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
+  <img href='https://github.com/MatthewJansen/Vectorized-Neural-Network/fork' src='https://img.shields.io/github/forks/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
+  <img href='https://github.com/MatthewJansen/Vectorized-Neural-Network' src='https://img.shields.io/github/watchers/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
+  <img href='https://twitter.com/intent/follow?screen_name=matthewjansen_' src='https://img.shields.io/twitter/follow/matthewjansen_?style=social' style='margin-right:10px;'>
 </div>
+
+<br><br>
 
 <center>
   <img src='https://i.postimg.cc/W1wr7ctR/Neural-Net.png' alt='NeuralNetwork'>
