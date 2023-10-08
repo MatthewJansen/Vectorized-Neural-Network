@@ -5,9 +5,7 @@
   <img href='https://www.python.org/' src='https://img.shields.io/badge/Made with-Python-blue' style='margin-right:10px;'>
   <img href='https://choosealicense.com/licenses/mit/' src='https://img.shields.io/badge/LICENSE-MIT-green' style='margin-right:10px'>
   <img href='https://github.com/MatthewJansen/Vectorized-Neural-Network' src='https://img.shields.io/github/stars/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
-  <img href='https://github.com/MatthewJansen/Vectorized-Neural-Network/fork' src='https://img.shields.io/github/forks/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
   <img href='https://github.com/MatthewJansen/Vectorized-Neural-Network' src='https://img.shields.io/github/watchers/MatthewJansen/Vectorized-Neural-Network?style=social' style='margin-right:10px'>
-  <img href='https://twitter.com/intent/follow?screen_name=matthewjansen_' src='https://img.shields.io/twitter/follow/matthewjansen_?style=social' style='margin-right:10px;'>
 </div>
 
 <br><br>
@@ -20,7 +18,7 @@
 
 Python implementation for a fully connected, vectorized neural network which I wrote for the purpose of displaying and challenging my understanding of neural networks.
 
-Neural networks computational graph structure which consists of layers of nodes called ’neurons’ which have biases and connecting weighted edges called ’synapses’.
+Neural networks are computational graph structures consisting of layers of nodes called ’neurons’ which have biases, and are connected by weighted edges called ’synapses’.
 
 **The process of training a neural network consists of three steps:**
 
@@ -35,7 +33,7 @@ Neural networks computational graph structure which consists of layers of nodes 
 ## Requirements
 
 - **Recommended python version:** Python 3.8.10 64-bit
-- Unzip and to add the raw MNIST data to the same directory as the code before using the project's notebook and code.
+- Unzip and add the raw MNIST data to the same directory as the code before using the project's notebook and code.
 
 [Note: This section will be updated in due course.]
 
@@ -58,7 +56,7 @@ Neural networks computational graph structure which consists of layers of nodes 
 ├── README.md
 ```
 
-- **data/mnist_data.zip** | zip file containing mnist train and test data
+- **data/mnist_data.zip** | zip file containing MNIST train and test data
 - **src/ActivationFunctions.py** | class for neural network activation functions
 - **src/ClassificationMetrics.py** | class for classification metrics
 - **src/DataHandler.py** | dataset handler for loading data
